@@ -1,5 +1,4 @@
 import streamlit as st
-from services.loader import load_all_data
 
 st.set_page_config(
     page_title="IKMC Dashboard",
@@ -8,30 +7,16 @@ st.set_page_config(
 
 st.title("IKMC Dashboard")
 
-data = load_all_data()
+st.markdown("""
+Welcome to the IKMC Monitoring Dashboard.
 
-col1, col2, col3, col4 = st.columns(4)
+Use the navigation menu on the left to explore:
 
-with col1:
-    st.metric(
-        "Eligibility Records",
-        len(data["eligibility"])
-    )
-
-with col2:
-    st.metric(
-        "Mother Records",
-        len(data["mother"])
-    )
-
-with col3:
-    st.metric(
-        "Daily Care Records",
-        len(data["daily"])
-    )
-
-with col4:
-    st.metric(
-        "Discharge Records",
-        len(data["discharge"])
-    )
+- Overview
+- Inborn
+- Outborn
+- MSNCU
+- PNC
+- Discharge
+- Data Quality
+""")

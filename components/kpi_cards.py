@@ -1,13 +1,14 @@
 import streamlit as st
 
 
-def render_kpi_card(label: str, value: str, change: str = "", icon: str = "📊"):
-    """Render a KPI card with label, value, and optional change indicator."""
-    col = st.container()
-    
-    with col:
-        st.metric(
-            label=f"{icon} {label}",
-            value=value,
-            delta=change if change else None
+def kpi_card(title, value):
+    with st.container(border=True):
+        st.caption(title)
+        st.markdown(
+            f"""
+            <h1 style='margin-top:0px;'>
+                {value}
+            </h1>
+            """,
+            unsafe_allow_html=True
         )
