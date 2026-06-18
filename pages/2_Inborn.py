@@ -47,13 +47,12 @@ from components.filters import render_filters
 # ==================================================
 # PAGE HEADER
 # ==================================================
+from components.dashboard_header import render_dashboard_header
 
-st.title("Inborn Cohort Compliance Registry")
-
-st.caption(
-    "Detailed metrics, SSC & KMC progress indexes for births completed within facility."
+render_dashboard_header(
+    title="Inborn Cohort Compliance Registry",
+    subtitle="Detailed metrics, SSC & KMC progress indexes for births completed within facility."
 )
-
 # ==================================================
 # FILTERS
 # ==================================================
