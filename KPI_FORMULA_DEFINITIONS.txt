@@ -1,0 +1,428 @@
+==================================================
+IKMC DASHBOARD
+KPI FORMULA DEFINITIONS
+==================================================
+
+Last Updated:
+June 2026
+
+Purpose:
+This document defines all KPI calculations used in the
+iKMC Dashboard. It serves as the reference document
+for dashboard reviews, validation sessions, and
+future development.
+
+==================================================
+DATA SOURCES
+==================================================
+
+1. Enrollment Master Dataset
+   Used for:
+   - Cohort classification
+   - Delivery type
+   - SSC indicators
+   - Breastfeeding indicators
+   - Attachment indicators
+
+2. Daily Monitoring Dataset
+   Used for:
+   - KMC duration calculations
+   - Program compliance indicators
+
+==================================================
+COHORT DEFINITIONS
+==================================================
+
+MSNCU
+Condition:
+scr_sncu_sick = 11
+
+PNC
+Condition:
+scr_sncu_sick = 12
+
+--------------------------------------------------
+
+NVD
+Condition:
+scr_del_mode = 11
+
+C-SECTION
+Condition:
+scr_del_mode = 13
+
+==================================================
+TOTAL CASES
+==================================================
+
+MSNCU TOTAL CASES
+
+Formula:
+Count of babies where
+
+scr_sncu_sick = 11
+
+--------------------------------------------------
+
+PNC TOTAL CASES
+
+Formula:
+Count of babies where
+
+scr_sncu_sick = 12
+
+==================================================
+DELIVERY TYPE COUNTS
+==================================================
+
+NVD COUNT
+
+Formula:
+Count where
+
+scr_del_mode = 11
+
+--------------------------------------------------
+
+C-SECTION COUNT
+
+Formula:
+Count where
+
+scr_del_mode = 13
+
+==================================================
+SSC RECEIVED
+==================================================
+
+Definition:
+Baby received Skin-to-Skin Care.
+
+Formula:
+Count where
+
+enr_ssc_rec = 11
+
+==================================================
+SSC WITHIN 2 HOURS
+==================================================
+
+Definition:
+SSC initiated within two hours of birth.
+
+Step 1
+
+Birth DateTime
+
+birth_dt =
+scr_dob + scr_tob
+
+--------------------------------------------------
+
+Step 2
+
+SSC DateTime
+
+ssc_dt =
+enr_ssc_init_dt + enr_ssc_init_tm
+
+--------------------------------------------------
+
+Step 3
+
+SSC Delay
+
+ssc_hours =
+(ssc_dt - birth_dt)
+
+--------------------------------------------------
+
+Criteria
+
+ssc_hours <= 2
+
+--------------------------------------------------
+
+Final KPI
+
+Count of babies satisfying:
+
+SSC Received
+AND
+SSC initiated within 2 hours
+
+==================================================
+AVERAGE KMC CONTINUOUS
+==================================================
+
+Definition:
+Average Kangaroo Mother Care duration.
+
+Source Field:
+
+dmf_kmc_dur
+
+Stored Unit:
+
+Minutes
+
+--------------------------------------------------
+
+Formula
+
+Average KMC Hours
+
+=
+Average(dmf_kmc_dur) / 60
+
+--------------------------------------------------
+
+Display Unit
+
+Hours per day
+
+Example
+
+318 minutes
+
+=
+5.3 hrs/day
+
+==================================================
+EXCLUSIVE BREASTFEEDING
+==================================================
+
+Definition:
+Breastfeeding initiated within one hour of birth.
+
+Step 1
+
+Birth DateTime
+
+birth_dt
+
+--------------------------------------------------
+
+Step 2
+
+Breastfeeding DateTime
+
+bf_dt =
+enr_bf_bentfed_hw_dt
++
+enr_bf_bentfed_hw_tm
+
+--------------------------------------------------
+
+Step 3
+
+Delay
+
+bf_hours =
+(bf_dt - birth_dt)
+
+--------------------------------------------------
+
+Criteria
+
+bf_hours <= 1
+
+--------------------------------------------------
+
+Final KPI
+
+Count of babies breastfed
+within one hour of birth
+
+==================================================
+AGE AT FIRST ATTACHMENT
+==================================================
+
+Definition:
+Average age at first breastfeeding attachment.
+
+Formula
+
+attachment_hours =
+(first_attachment_datetime
+-
+birth_datetime)
+
+--------------------------------------------------
+
+Displayed KPI
+
+Average attachment_hours
+
+--------------------------------------------------
+
+Display Unit
+
+Hours
+
+==================================================
+IKMC COVERAGE
+==================================================
+
+Definition
+
+Program Criteria Met
+
+--------------------------------------------------
+
+Required Conditions
+
+1. SSC initiated within 2 hours
+
+AND
+
+2. Average KMC >= 8 hours/day
+
+--------------------------------------------------
+
+KMC Threshold
+
+dmf_kmc_dur >= 480
+
+Reason
+
+8 hours
+=
+480 minutes
+
+--------------------------------------------------
+
+Achieved Count
+
+Unique babies satisfying:
+
+SSC < 2 hours
+
+AND
+
+KMC >= 8 hours/day
+
+--------------------------------------------------
+
+Coverage Percentage
+
+Current Dashboard Logic
+
+Coverage %
+
+=
+(
+Achieved Babies
+/
+Total Cohort Babies
+)
+x 100
+
+--------------------------------------------------
+
+Example
+
+MSNCU NVD
+
+Achieved Babies = 4
+
+Total NVD Babies = 166
+
+Coverage
+
+=
+(4 / 166) x 100
+
+=
+2.4%
+
+==================================================
+AGGREGATED CASES
+==================================================
+
+MSNCU
+
+Aggregated Cases
+
+=
+NVD
++
+C-Section
+
+Example
+
+166 + 47
+
+=
+213
+
+--------------------------------------------------
+
+PNC
+
+Aggregated Cases
+
+=
+NVD
++
+C-Section
+
+Example
+
+156 + 260
+
+=
+416
+
+==================================================
+CURRENT DASHBOARD VALUES
+(JUNE 2026 SNAPSHOT)
+==================================================
+
+MSNCU
+
+Total Cases            : 213
+NVD                    : 166
+C-Section              : 47
+
+SSC <2H (NVD)          : 15
+SSC <2H (C-Section)    : 9
+
+Average KMC (NVD)      : 5.3 hrs/day
+Average KMC (C-Section): 4.0 hrs/day
+
+Exclusive BF (NVD)     : 26
+Exclusive BF (CS)      : 12
+
+Attachment Age (NVD)   : 3.0 hrs
+Attachment Age (CS)    : 0 hrs
+
+iKMC Coverage (NVD)    : 2.4%
+iKMC Coverage (CS)     : 8.5%
+
+--------------------------------------------------
+
+PNC
+
+Total Cases            : 416
+NVD                    : 156
+C-Section              : 260
+
+SSC <2H (NVD)          : 3
+SSC <2H (C-Section)    : 0
+
+Average KMC (NVD)      : 2.8 hrs/day
+Average KMC (C-Section): 1.9 hrs/day
+
+Exclusive BF (NVD)     : 9
+Exclusive BF (CS)      : 4
+
+Attachment Age (NVD)   : 0 hrs
+Attachment Age (CS)    : 1.3 hrs
+
+iKMC Coverage (NVD)    : 0%
+iKMC Coverage (CS)     : 0%
+
+==================================================
+END OF DOCUMENT
+==================================================
