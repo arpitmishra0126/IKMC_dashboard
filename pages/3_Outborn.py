@@ -1,8 +1,5 @@
 import streamlit as st
 
-st.set_page_config(page_title="Outborn", page_icon="🏥", layout="wide")
-
-st.title("🏥 Outborn")
-
-# Add your outborn page content here
-st.write("Outborn patient data and metrics.")
+from components.dashboard_header import render_dashboard_header
+from components.filters import render_filters
+from components.kpi_cards import kpi_card
