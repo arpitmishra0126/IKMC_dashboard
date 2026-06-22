@@ -441,6 +441,47 @@ def get_pnc_avg_kmc():
 
     return round(avg_minutes / 60, 1)
 
+
+# ==================================================
+# OUTBORN AVG KMC
+# ==================================================
+
+def get_outborn_avg_kmc():
+
+    df = get_outborn_df()
+
+    avg_minutes = df["dmf_kmc_dur"].mean()
+
+    if pd.isna(avg_minutes):
+        return 0
+
+    return round(avg_minutes / 60, 1)
+
+
+def get_outborn_nvd_avg_kmc():
+
+    df = get_outborn_nvd_df()
+
+    avg_minutes = df["dmf_kmc_dur"].mean()
+
+    if pd.isna(avg_minutes):
+        return 0
+
+    return round(avg_minutes / 60, 1)
+
+
+def get_outborn_csection_avg_kmc():
+
+    df = get_outborn_csection_df()
+
+    avg_minutes = df["dmf_kmc_dur"].mean()
+
+    if pd.isna(avg_minutes):
+        return 0
+
+    return round(avg_minutes / 60, 1)
+
+
 # ==================================================
 # DELIVERY MODE AVG KMC
 # ==================================================
@@ -778,6 +819,35 @@ def get_msncu_csection_ssc_under_2h_count():
 
 
 # ==================================================
+# OUTBORN SSC <2H
+# ==================================================
+
+def get_outborn_nvd_ssc_under_2h_count():
+
+    df = get_ssc_under_2h_df()
+
+    df = df[
+        (df[FIELD_MAP["place_of_birth"]] == 12)
+        &
+        (df[FIELD_MAP["delivery_mode"]] == 11)
+    ]
+
+    return len(df)
+
+
+def get_outborn_csection_ssc_under_2h_count():
+
+    df = get_ssc_under_2h_df()
+
+    df = df[
+        (df[FIELD_MAP["place_of_birth"]] == 12)
+        &
+        (df[FIELD_MAP["delivery_mode"]] == 13)
+    ]
+
+    return len(df)
+
+# ==================================================
 # PNC SSC <2H
 # ==================================================
 
@@ -923,3 +993,234 @@ def get_pnc_csection_coverage():
         (achieved / total) * 100,
         1
     )
+
+# ==================================================
+# OUTBORN BASE DF
+# ==================================================
+
+def get_outborn_df():
+
+    df = get_master_df().copy()
+
+    df = df[
+        (df["scr_pob"] == 12)
+        &
+        (df["dmf_babyid"] != "null")
+    ]
+
+    return df
+
+
+# ==================================================
+# OUTBORN COUNTS
+# ==================================================
+
+def get_outborn_total_cases():
+
+    df = get_outborn_df()
+
+    return df["dmf_babyid"].nunique()
+
+
+def get_outborn_nvd_count():
+
+    df = get_outborn_df()
+
+    df = df[
+        df["scr_del_mode"] == 11
+    ]
+
+    return df["dmf_babyid"].nunique()
+
+
+def get_outborn_csection_count():
+
+    df = get_outborn_df()
+
+    df = df[
+        df["scr_del_mode"] == 13
+    ]
+
+    return df["dmf_babyid"].nunique()
+
+# ==================================================
+# OUTBORN DELIVERY MODE DFS
+# ==================================================
+
+def get_outborn_nvd_df():
+
+    df = get_outborn_df()
+
+    df = df[
+        df[FIELD_MAP["delivery_mode"]] == 11
+    ]
+
+    return df
+
+
+def get_outborn_csection_df():
+
+    df = get_outborn_df()
+
+    df = df[
+        df[FIELD_MAP["delivery_mode"]] == 13
+    ]
+
+    return df
+
+
+# ==================================================
+# OUTBORN EXCLUSIVE BREASTFEEDING
+# ==================================================
+
+def get_outborn_nvd_bf_count():
+
+    df = get_outborn_nvd_df()
+
+    return (
+        df[
+            df["enr_bf_bentfed"] == 11
+        ]["dmf_babyid"]
+        .nunique()
+    )
+
+
+def get_outborn_csection_bf_count():
+
+    df = get_outborn_csection_df()
+
+    return (
+        df[
+            df["enr_bf_bentfed"] == 11
+        ]["dmf_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# OUTBORN ATTACHMENT AGE
+# ==================================================
+
+def get_outborn_nvd_attachment_hours():
+
+    df = get_outborn_nvd_df().copy()
+
+    df = df[
+        df["enr_bf_bentfed_hw_dt"].notna()
+    ]
+
+    if len(df) == 0:
+        return 0
+
+    birth_dt = pd.to_datetime(
+        df["scr_dob"].astype(str)
+        + " "
+        + df["scr_tob"].astype(str)
+    )
+
+    attach_dt = pd.to_datetime(
+        df["enr_bf_bentfed_hw_dt"].astype(str)
+        + " "
+        + df["enr_bf_bentfed_hw_tm"].astype(str)
+    )
+
+    hours = (
+        attach_dt - birth_dt
+    ).dt.total_seconds() / 3600
+
+    return round(hours.mean(), 1)
+
+
+def get_outborn_csection_attachment_hours():
+
+    df = get_outborn_csection_df().copy()
+
+    df = df[
+        df["enr_bf_bentfed_hw_dt"].notna()
+    ]
+
+    if len(df) == 0:
+        return 0
+
+    birth_dt = pd.to_datetime(
+        df["scr_dob"].astype(str)
+        + " "
+        + df["scr_tob"].astype(str)
+    )
+
+    attach_dt = pd.to_datetime(
+        df["enr_bf_bentfed_hw_dt"].astype(str)
+        + " "
+        + df["enr_bf_bentfed_hw_tm"].astype(str)
+    )
+
+    hours = (
+        attach_dt - birth_dt
+    ).dt.total_seconds() / 3600
+
+    return round(hours.mean(), 1)
+
+# ==================================================
+# OUTBORN PROGRAM ACHIEVEMENT
+# SSC <2H + KMC >=8H
+# ==================================================
+
+def get_outborn_nvd_achieved_count():
+
+    df = get_program_criteria_df()
+
+    return (
+        df[
+            (df["scr_pob"] == 12)
+            &
+            (df["scr_del_mode"] == 11)
+        ]["dmf_babyid"]
+        .nunique()
+    )
+
+
+def get_outborn_csection_achieved_count():
+
+    df = get_program_criteria_df()
+
+    return (
+        df[
+            (df["scr_pob"] == 12)
+            &
+            (df["scr_del_mode"] == 13)
+        ]["dmf_babyid"]
+        .nunique()
+    )
+
+
+# ==================================================
+# OUTBORN COVERAGE
+# ==================================================
+
+def get_outborn_nvd_coverage():
+
+    achieved = get_outborn_nvd_achieved_count()
+    total = get_outborn_nvd_count()
+
+    if total == 0:
+        return 0
+
+    return round(
+        (achieved / total) * 100,
+        1
+    )
+
+
+def get_outborn_csection_coverage():
+
+    achieved = get_outborn_csection_achieved_count()
+    total = get_outborn_csection_count()
+
+    if total == 0:
+        return 0
+
+    return round(
+        (achieved / total) * 100,
+        1
+    )
+
+
