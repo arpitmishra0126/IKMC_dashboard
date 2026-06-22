@@ -1,5 +1,3 @@
-from turtle import st
-
 from services.indicators import (
     get_msncu_total_cases,
     get_msncu_nvd_count,
@@ -39,30 +37,25 @@ from services.indicators import (
     get_msncu_csection_coverage,
     get_pnc_nvd_coverage,
     get_pnc_csection_coverage,
-    get_avg_kmc_hours
 )
+from services.indicators import get_avg_kmc_hours
 
 import streamlit as st
-from datetime import datetime
+
 from components.filters import render_filters
-
-# ==================================================
-# REFRESH STATE
-# ==================================================
-
-if "last_refresh" not in st.session_state:
-    st.session_state["last_refresh"] = datetime.now()
 
 # ==================================================
 # PAGE HEADER
 # ==================================================
-
 from components.dashboard_header import render_dashboard_header
 
 render_dashboard_header(
     title="Inborn Cohort Compliance Registry",
     subtitle="Detailed metrics, SSC & KMC progress indexes for births completed within facility."
 )
+# ==================================================
+# FILTERS
+# ==================================================
 
 render_filters()
 

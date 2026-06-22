@@ -1,15 +1,27 @@
 import sys
 from pathlib import Path
-import pandas as pd
 
 sys.path.append(
     str(Path(__file__).resolve().parents[1])
 )
 
-from services.indicators import *
+from services.indicators import get_master_df
 
-print(get_msncu_nvd_achieved_count())
-print(get_msncu_csection_achieved_count())
+df = get_master_df()
 
-print(get_msncu_nvd_coverage())
-print(get_msncu_csection_coverage())
+print("=" * 60)
+print("enr_ssc_rec DISTRIBUTION")
+print("=" * 60)
+
+print(
+    df["enr_ssc_rec"]
+    .value_counts(dropna=False)
+)
+
+df = get_master_df()
+
+print(
+    df.groupby("dmf_babyid")["enr_ssc_rec"]
+    .first()
+    .value_counts(dropna=False)
+)

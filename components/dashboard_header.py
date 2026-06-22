@@ -9,7 +9,7 @@ def render_dashboard_header(title: str, subtitle: str):
 
     # breathing room
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+
     st.title(title)
 
     st.caption(subtitle)
