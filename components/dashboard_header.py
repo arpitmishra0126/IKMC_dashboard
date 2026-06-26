@@ -1,7 +1,5 @@
 import streamlit as st
 from datetime import datetime
-
-
 def render_dashboard_header(title: str, subtitle: str):
 
     if "last_refresh" not in st.session_state:
