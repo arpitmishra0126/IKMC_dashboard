@@ -5,289 +5,263 @@ sys.path.append(
     str(Path(__file__).resolve().parents[1])
 )
 
-import pandas as pd
-
-from services.indicators import (
-    get_eligibility_df,
-    get_master_df,
-    get_enrollment_master_df,
-)
+from services.indicators import *
 
 # ==================================================
-# LOAD DATA
-# ==================================================
-
-eligibility = get_eligibility_df()
-master = get_master_df()
-enrollment = get_enrollment_master_df()
-
-# ==================================================
-# BASIC DATASET INFO
+# DASHBOARD MEASURES
 # ==================================================
 
 print("\n" + "=" * 80)
-print("DATASET OVERVIEW")
+print("DASHBOARD MEASURES")
 print("=" * 80)
 
-print("Eligibility Rows:", len(eligibility))
-print("Enrollment Rows:", len(enrollment))
-print("Master Rows:", len(master))
-
-if "dmf_babyid" in master.columns:
-    print("Unique Babies:", master["dmf_babyid"].nunique())
+print(f"PRE-SCREENED               : {get_total_screening_records()}")
+print(f"ALIVE                      : {get_total_alive_babies()}")
+print(f"SCREENED (PT/LBW)          : {get_total_screened()}")
+print(f"ELIGIBLE FOR ENROLLMENT    : {get_total_eligible()}")
+print(f"CONSENTED                  : {get_total_consented()}")
+print(f"ENROLLED                   : {get_total_enrolled()}")
 
 # ==================================================
-# PLACE OF BIRTH
+# FUNNEL VALIDATION
+# ==================================================
+
+alive = get_alive_df()
+screened = get_preterm_lbw_df()
+eligible = get_eligible_df()
+consented = get_consented_df()
+enrolled = get_enrolled_df()
+
+print("\n" + "=" * 80)
+print("FUNNEL VALIDATION")
+print("=" * 80)
+
+print(f"Alive Records              : {len(alive)}")
+print(f"Screened Records           : {len(screened)}")
+print(f"Eligible Records           : {len(eligible)}")
+print(f"Consented Records          : {len(consented)}")
+print(f"Enrolled Records           : {len(enrolled)}")
+
+print()
+
+print(f"Alive → Screened Lost      : {len(alive) - len(screened)}")
+print(f"Screened → Eligible Lost   : {len(screened) - len(eligible)}")
+print(f"Eligible → Consented Lost  : {len(eligible) - len(consented)}")
+print(f"Consented → Enrolled Lost  : {len(consented) - len(enrolled)}")
+
+# ==================================================
+# ELIGIBILITY VALIDATION
 # ==================================================
 
 print("\n" + "=" * 80)
-print("PLACE OF BIRTH (scr_pob)")
+print("ELIGIBILITY VALIDATION")
 print("=" * 80)
 
-print(master["scr_pob"].value_counts(dropna=False))
-
-# ==================================================
-# SNCU TYPE
-# ==================================================
-
-print("\n" + "=" * 80)
-print("SNCU TYPE (scr_sncu_sick)")
-print("=" * 80)
-
-print(master["scr_sncu_sick"].value_counts(dropna=False))
-
-# ==================================================
-# DELIVERY MODE
-# ==================================================
-
-print("\n" + "=" * 80)
-print("DELIVERY MODE (scr_del_mode)")
-print("=" * 80)
-
-print(master["scr_del_mode"].value_counts(dropna=False))
-
-# ==================================================
-# SSC RECEIVED
-# ==================================================
-
-print("\n" + "=" * 80)
-print("SSC RECEIVED (ROW LEVEL)")
-print("=" * 80)
-
-print(master["enr_ssc_rec"].value_counts(dropna=False))
-
-print("\n")
-
-print("=" * 80)
-print("SSC RECEIVED (BABY LEVEL)")
-print("=" * 80)
-
-ssc_baby = (
-    master.groupby("dmf_babyid")["enr_ssc_rec"]
-    .first()
-)
-
-print(ssc_baby.value_counts(dropna=False))
-
-# ==================================================
-# SSC TIMING
-# ==================================================
-
-print("\n" + "=" * 80)
-print("SSC TIMING VALIDATION")
-print("=" * 80)
-
-ssc_df = enrollment.copy()
-
-ssc_df = ssc_df[
-    ssc_df["enr_ssc_rec"] == 11
-]
-
-birth_dt = pd.to_datetime(
-    ssc_df["scr_dob"].astype(str)
-    + " "
-    + ssc_df["scr_tob"].astype(str),
-    errors="coerce"
-)
-
-ssc_dt = pd.to_datetime(
-    ssc_df["enr_ssc_init_dt"].astype(str)
-    + " "
-    + ssc_df["enr_ssc_init_tm"].astype(str),
-    errors="coerce"
-)
-
-ssc_df["ssc_hours"] = (
-    ssc_dt - birth_dt
-).dt.total_seconds() / 3600
-
-print("SSC Received Babies:", len(ssc_df))
-
-print("\nSSC <= 2 Hours")
-print((ssc_df["ssc_hours"] <= 2).sum())
-
-print("\nSSC > 2 Hours")
-print((ssc_df["ssc_hours"] > 2).sum())
-
-print("\nMissing SSC Hours")
-print(ssc_df["ssc_hours"].isna().sum())
-
-# ==================================================
-# KMC VALIDATION
-# ==================================================
-
-print("\n" + "=" * 80)
-print("KMC DURATION")
-print("=" * 80)
-
-print(master["dmf_kmc_dur"].describe())
-
-print("\nKMC >= 480")
-print((master["dmf_kmc_dur"] >= 480).sum())
-
-print("\nKMC < 480")
-print((master["dmf_kmc_dur"] < 480).sum())
-
-print("\nMissing KMC")
-print(master["dmf_kmc_dur"].isna().sum())
-
-# ==================================================
-# BREASTFEEDING
-# ==================================================
-
-print("\n" + "=" * 80)
-print("EXCLUSIVE BREASTFEEDING")
-print("=" * 80)
-
-print(master["enr_bf_bentfed"].value_counts(dropna=False))
-
-# ==================================================
-# ATTACHMENT
-# ==================================================
-
-print("\n" + "=" * 80)
-print("ATTACHMENT DATA")
-print("=" * 80)
-
+print("\nscr_mconst_adm")
 print(
-    "Valid Attachment Dates:",
-    master["enr_bf_bentfed_hw_dt"].notna().sum()
-)
-
-print(
-    "Missing Attachment Dates:",
-    master["enr_bf_bentfed_hw_dt"].isna().sum()
-)
-
-# ==================================================
-# PROGRAM CRITERIA FUNNEL
-# ==================================================
-
-print("\n" + "=" * 80)
-print("PROGRAM CRITERIA FUNNEL")
-print("=" * 80)
-
-df = master.copy()
-
-print(
-    "START BABIES:",
-    df["dmf_babyid"].nunique()
-)
-
-df1 = df[
-    df["enr_ssc_rec"] == 11
-]
-
-print(
-    "AFTER SSC RECEIVED:",
-    df1["dmf_babyid"].nunique()
-)
-
-birth_dt = pd.to_datetime(
-    df1["scr_dob"].astype(str)
-    + " "
-    + df1["scr_tob"].astype(str),
-    errors="coerce"
-)
-
-ssc_dt = pd.to_datetime(
-    df1["enr_ssc_init_dt"].astype(str)
-    + " "
-    + df1["enr_ssc_init_tm"].astype(str),
-    errors="coerce"
-)
-
-df1["ssc_hours"] = (
-    ssc_dt - birth_dt
-).dt.total_seconds() / 3600
-
-df2 = df1[
-    df1["ssc_hours"] <= 2
-]
-
-print(
-    "AFTER SSC <= 2H:",
-    df2["dmf_babyid"].nunique()
-)
-
-df3 = df2[
-    df2["dmf_kmc_dur"] >= 480
-]
-
-print(
-    "AFTER KMC >= 480:",
-    df3["dmf_babyid"].nunique()
-)
-
-print("\n")
-
-print(
-    df3.groupby("dmf_babyid")["dmf_kmc_dur"]
-    .agg(["count", "mean", "max"])
-)
-
-# ==================================================
-# OUTBORN VALIDATION
-# ==================================================
-
-print("\n" + "=" * 80)
-print("OUTBORN VALIDATION")
-print("=" * 80)
-
-outborn = master[
-    master["scr_pob"] == 12
-]
-
-print(
-    "Outborn Unique Babies:",
-    outborn["dmf_babyid"].nunique()
-)
-
-print("\nDelivery Mode")
-
-print(
-    outborn["scr_del_mode"]
+    screened["scr_mconst_adm"]
     .value_counts(dropna=False)
 )
 
-print("\nSSC Received")
-
+print("\nscr_mconst")
 print(
-    outborn["enr_ssc_rec"]
+    eligible["scr_mconst"]
     .value_counts(dropna=False)
 )
 
-print("\nBF")
-
+print("\nscr_bw_ga_stable")
 print(
-    outborn["enr_bf_bentfed"]
+    consented["scr_bw_ga_stable"]
     .value_counts(dropna=False)
 )
 
 # ==================================================
-# END
+# ENROLLED SAMPLE
 # ==================================================
 
 print("\n" + "=" * 80)
-print("AUDIT COMPLETE")
+print("ENROLLED SAMPLE")
 print("=" * 80)
+
+cols = [
+    "recordid",
+    "scr_research_id",
+    "scr_pob",
+    "scr_mconst_adm",
+    "scr_mconst",
+    "scr_bw_ga_stable",
+]
+
+cols = [c for c in cols if c in enrolled.columns]
+
+print(
+    enrolled[cols].head(20)
+)
+
+print("\n" + "=" * 80)
+print("INBORN PAGE VALIDATION")
+print("=" * 80)
+
+print(f"MSNCU Total                 : {get_msncu_count()}")
+print(f"MSNCU NVD                   : {get_msncu_nvd_count()}")
+print(f"MSNCU C-Section             : {get_msncu_csection_count()}")
+
+print()
+
+print(f"PNC Total                   : {get_pnc_count()}")
+print(f"PNC NVD                     : {get_pnc_nvd_count()}")
+print(f"PNC C-Section               : {get_pnc_csection_count()}")
+
+print()
+
+print(f"MSNCU Avg KMC               : {get_msncu_avg_kmc()}")
+print(f"MSNCU NVD Avg KMC           : {get_msncu_nvd_avg_kmc()}")
+print(f"MSNCU C-Section Avg KMC     : {get_msncu_csection_avg_kmc()}")
+
+print()
+
+print(f"PNC Avg KMC                 : {get_pnc_avg_kmc()}")
+print(f"PNC NVD Avg KMC             : {get_pnc_nvd_avg_kmc()}")
+print(f"PNC C-Section Avg KMC       : {get_pnc_csection_avg_kmc()}")
+
+
+print("\n" + "=" * 80)
+print("MSNCU DATASET VALIDATION")
+print("=" * 80)
+
+msncu = get_msncu_master_df()
+
+print("Rows               :", len(msncu))
+print("Unique Babies      :", msncu["dmf_babyid"].nunique())
+
+print()
+
+print("Delivery Mode")
+print(
+    msncu["scr_del_mode"]
+    .value_counts(dropna=False)
+)
+
+print("\n" + "=" * 80)
+print("MSNCU ELIGIBILITY VS MASTER")
+print("=" * 80)
+
+eligible = get_msncu_df()
+master = get_msncu_master_df()
+
+print("Eligibility Rows       :", len(eligible))
+print("Eligibility Babies     :", eligible["scr_babyid"].nunique())
+
+print()
+
+print("Master Rows            :", len(master))
+print("Master Babies          :", master["dmf_babyid"].nunique())
+
+
+print("\n" + "=" * 80)
+print("PNC ELIGIBILITY VS MASTER")
+print("=" * 80)
+
+eligible = get_pnc_df()
+master = get_pnc_master_df()
+
+print("Eligibility Rows       :", len(eligible))
+print("Eligibility Babies     :", eligible["scr_babyid"].nunique())
+
+print()
+
+print("Master Rows            :", len(master))
+print("Master Babies          :", master["dmf_babyid"].nunique())
+
+print()
+
+print("Delivery Mode")
+print(
+    master["scr_del_mode"]
+    .value_counts(dropna=False)
+)
+
+
+print("\n" + "=" * 80)
+print("MISSING PNC BABY")
+print("=" * 80)
+
+eligible_ids = set(
+    get_pnc_df()["scr_babyid"].dropna().astype(str)
+)
+
+master_ids = set(
+    get_pnc_master_df()["dmf_babyid"].dropna().astype(str)
+)
+
+missing = eligible_ids - master_ids
+
+print("Missing Baby IDs")
+print(missing)
+
+print()
+
+print(
+    get_pnc_df()[
+        get_pnc_df()["scr_babyid"].astype(str).isin(missing)
+    ][
+        [
+            "scr_babyid",
+            "recordid",
+            "scr_research_id",
+            "scr_pob",
+            "scr_sncu_sick"
+        ]
+    ]
+)
+
+print("\n" + "=" * 80)
+print("TRACE BABY : E14060152")
+print("=" * 80)
+
+baby = "E14060152"
+
+print("\nELIGIBILITY")
+print(
+    get_eligibility_df()[
+        get_eligibility_df()["scr_babyid"] == baby
+    ][
+        [
+            "scr_babyid",
+            "recordid",
+            "scr_research_id",
+            "scr_pob",
+            "scr_sncu_sick",
+            "scr_mconst_adm",
+            "scr_mconst",
+            "scr_bw_ga_stable",
+        ]
+    ]
+)
+
+print("\nMOTHER")
+print(
+    get_mother_df()[
+        get_mother_df()["enr_babyid"] == baby
+    ]
+)
+
+print("\nDAILY")
+print(
+    get_daily_df()[
+        get_daily_df()["dmf_babyid"] == baby
+    ]
+)
+
+print("\nMASTER")
+print(
+    get_master_df()[
+        get_master_df()["scr_babyid"] == baby
+    ][
+        [
+            "scr_babyid",
+            "enr_babyid",
+            "dmf_babyid",
+        ]
+    ]
+)
