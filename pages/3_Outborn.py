@@ -13,6 +13,10 @@ from services.indicators import (
     get_outborn_avg_kmc,
     get_outborn_nvd_avg_kmc,
     get_outborn_csection_avg_kmc,
+    get_outborn_nvd_bf_count,
+    get_outborn_csection_bf_count,
+    get_outborn_nvd_attachment_hours,
+    get_outborn_csection_attachment_hours,
 )
 
 # ==================================================
@@ -70,13 +74,13 @@ col3, col4 = st.columns(2)
 with col3:
     kpi_card(
         "EXCLUSIVE BF",
-        "--"
+        get_outborn_nvd_bf_count()
     )
 
 with col4:
     kpi_card(
         "ATTACHMENT",
-        "--"
+        f"{get_outborn_nvd_attachment_hours()} hrs"
     )
 
 # ==================================================
@@ -108,11 +112,11 @@ col3, col4 = st.columns(2)
 with col3:
     kpi_card(
         "EXCLUSIVE BF",
-        "--"
+        get_outborn_csection_bf_count()
     )
 
 with col4:
     kpi_card(
         "ATTACHMENT",
-        "--"
+        f"{get_outborn_csection_attachment_hours()} hrs"
     )

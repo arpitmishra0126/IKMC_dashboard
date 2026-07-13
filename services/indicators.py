@@ -120,15 +120,12 @@ def get_total_consented():
 # ==================================================
 
 def get_inborn_count():
-
-    return len(
-        get_inborn_df()
-    )
-
+    df = get_inborn_df()
+    return df["scr_babyid"].nunique()
 
 def get_outborn_count():
-
-    return get_outborn_total_cases()
+    df = get_outborn_df()
+    return df["scr_babyid"].nunique()
 
 
 # ==================================================
@@ -192,21 +189,17 @@ def get_pnc_df():
 # ==================================================
 
 def get_msncu_total_cases():
-    return len(get_msncu_df())
+    return get_msncu_master_df()["dmf_babyid"].nunique()
 
 
 def get_msncu_nvd_count():
-
-    return len(
-        get_msncu_nvd_df()
-    )
+    df = get_msncu_nvd_df()
+    return df["dmf_babyid"].nunique()
 
 
 def get_msncu_csection_count():
-
-    return len(
-        get_msncu_csection_df()
-    )
+    df = get_msncu_csection_df()
+    return df["dmf_babyid"].nunique()
 
 
 # ==================================================
@@ -214,21 +207,17 @@ def get_msncu_csection_count():
 # ==================================================
 
 def get_pnc_total_cases():
-    return len(get_pnc_df())
+    return get_pnc_master_df()["dmf_babyid"].nunique()
 
 
 def get_pnc_nvd_count():
-
-    return len(
-        get_pnc_nvd_df()
-    )
+    df = get_pnc_nvd_df()
+    return df["dmf_babyid"].nunique()
 
 
 def get_pnc_csection_count():
-
-    return len(
-        get_pnc_csection_df()
-    )
+    df = get_pnc_csection_df()
+    return df["dmf_babyid"].nunique()
 
 # ==================================================
 # SSC INDICATORS
@@ -370,21 +359,12 @@ def get_enrollment_master_df():
 # ==================================================
 
 def get_msncu_master_df():
-
     df = get_master_df()
-
-    return df[
-        df["scr_sncu_sick"] == 11
-    ]
-
+    return df[(df["scr_pob"] == 11)&(df["scr_sncu_sick"] == 11)]
 
 def get_pnc_master_df():
-
     df = get_master_df()
-
-    return df[
-        df["scr_sncu_sick"] == 12
-    ]
+    return df[(df["scr_pob"] == 11)&(df["scr_sncu_sick"] == 12)]
 
 
 def get_msncu_nvd_df():
