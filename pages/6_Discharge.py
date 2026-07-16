@@ -229,24 +229,4 @@ with col2:
             get_outborn_csection_death()
         )
 
-# ==================================================
-# COMPLIANCE VS OUTCOME
-# ==================================================
 
-st.markdown("### Compliance vs Outcome")
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    kpi_card(
-        "PROGRAM CRITERIA MET",
-        "Pending Validation"
-    )
-
-with col2:
-
-    kpi_card(
-        "PROGRAM CRITERIA NOT MET",
-        "Pending Validation"
-    )
