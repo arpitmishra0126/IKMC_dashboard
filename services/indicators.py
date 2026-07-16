@@ -1312,3 +1312,340 @@ def get_outborn_csection_coverage():
     return round((achieved / total) * 100,1)
 
 
+# ==================================================
+# DISCHARGE DATASET
+# ==================================================
+
+def get_discharge_df():
+
+    data = load_all_data()
+
+    return data["discharge"]
+
+
+# ==================================================
+# DISCHARGE DATASETS
+# ==================================================
+
+def get_discharge_master_df():
+
+    discharge = get_discharge_df()
+
+    eligibility = get_eligibility_df()
+
+    return discharge.merge(
+        eligibility,
+        left_on="dis_babyid",
+        right_on="scr_babyid",
+        how="left"
+    )
+
+def get_inborn_discharge_df():
+
+    df = get_discharge_master_df()
+
+    return df[df["scr_pob"] == 11]
+
+
+def get_outborn_discharge_df():
+
+    df = get_discharge_master_df()
+
+    return df[
+        df["scr_pob"].isin([12, 13, 14])
+    ]
+
+def get_inborn_nvd_discharge_df():
+
+    df = get_inborn_discharge_df()
+
+    return df[df["scr_del_mode"].isin([11, 12])]
+
+
+def get_inborn_csection_discharge_df():
+
+    df = get_inborn_discharge_df()
+
+    return df[df["scr_del_mode"] == 13]
+
+
+def get_outborn_nvd_discharge_df():
+
+    df = get_outborn_discharge_df()
+
+    return df[df["scr_del_mode"].isin([11, 12])]
+
+
+def get_outborn_csection_discharge_df():
+
+    df = get_outborn_discharge_df()
+
+    return df[df["scr_del_mode"] == 13]
+
+
+# ==================================================
+# OVERALL DISCHARGE OUTCOMES
+# ==================================================
+
+def get_total_discharged():
+
+    df = get_discharge_master_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 11
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+
+def get_total_referred():
+
+    df = get_discharge_master_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 14
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+
+def get_total_lama():
+
+    df = get_discharge_master_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 12
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+
+def get_total_death():
+
+    df = get_discharge_master_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 13
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# INBORN NVD OUTCOMES
+# ==================================================
+
+def get_inborn_nvd_discharged():
+
+    df = get_inborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 11
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_nvd_referred():
+
+    df = get_inborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 14
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_nvd_lama():
+
+    df = get_inborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 12
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_nvd_death():
+
+    df = get_inborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 13
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# INBORN C-SECTION OUTCOMES
+# ==================================================
+
+def get_inborn_csection_discharged():
+
+    df = get_inborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 11
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_csection_referred():
+
+    df = get_inborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 14
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_csection_lama():
+
+    df = get_inborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 12
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_inborn_csection_death():
+
+    df = get_inborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 13
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# OUTBORN NVD OUTCOMES
+# ==================================================
+
+def get_outborn_nvd_discharged():
+
+    df = get_outborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 11
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_nvd_referred():
+
+    df = get_outborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 14
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_nvd_lama():
+
+    df = get_outborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 12
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_nvd_death():
+
+    df = get_outborn_nvd_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 13
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# OUTBORN C-SECTION OUTCOMES
+# ==================================================
+
+def get_outborn_csection_discharged():
+
+    df = get_outborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 11
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_csection_referred():
+
+    df = get_outborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 14
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_csection_lama():
+
+    df = get_outborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 12
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+def get_outborn_csection_death():
+
+    df = get_outborn_csection_discharge_df()
+
+    return (
+        df[
+            df["dis_inf_outcome"] == 13
+        ]["dis_babyid"]
+        .nunique()
+    )
+
+# ==================================================
+# STILL ADMITTED
+# ==================================================
+
+def get_total_still_admitted():
+
+    df = get_enrollment_master_df()
+
+    consented = (
+        df[
+            (df["scr_mconst"] == 11)
+            &
+            (df["scr_mconst_adm"] == 11)
+        ]["scr_babyid"]
+        .nunique()
+    )
+
+    discharged = (
+        get_discharge_df()["dis_babyid"]
+        .nunique()
+    )
+
+    return consented - discharged

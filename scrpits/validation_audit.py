@@ -568,3 +568,391 @@ print()
 
 print("Place of Birth")
 print(df["scr_pob"].value_counts(dropna=False))
+
+print("\n" + "=" * 80)
+print("NULL BABY ID INVESTIGATION")
+print("=" * 80)
+
+df = get_master_df()
+
+# Literal string "null"
+null_df = df[
+    df["dmf_babyid"]
+    .astype(str)
+    .str.strip()
+    .str.lower() == "null"
+]
+
+print("Total Master Rows :", len(null_df))
+
+print()
+
+print("Unique recordid :", null_df["recordid"].nunique())
+print(null_df["recordid"].drop_duplicates().tolist())
+
+print()
+
+print("Unique Research IDs :", null_df["scr_research_id"].nunique())
+print(null_df["scr_research_id"].drop_duplicates().tolist())
+
+print()
+
+print("Unique Screening Baby IDs :", null_df["scr_babyid"].nunique())
+print(null_df["scr_babyid"].drop_duplicates().tolist())
+
+print()
+
+print("Unique Enrollment Baby IDs :", null_df["enr_babyid"].nunique())
+print(null_df["enr_babyid"].drop_duplicates().tolist())
+
+print()
+
+print("Unique Master Baby IDs :", null_df["dmf_babyid"].nunique())
+print(null_df["dmf_babyid"].drop_duplicates().tolist())
+
+print()
+
+print("Place of Birth")
+print(
+    null_df["scr_pob"]
+    .value_counts(dropna=False)
+)
+
+print()
+
+print("SNCU Type")
+print(
+    null_df["scr_sncu_sick"]
+    .value_counts(dropna=False)
+)
+
+print()
+
+print("Delivery Mode")
+print(
+    null_df["scr_del_mode"]
+    .value_counts(dropna=False)
+)
+
+print()
+
+print("First 20 Records")
+print(
+    null_df[
+        [
+            "recordid",
+            "scr_research_id",
+            "scr_babyid",
+            "enr_babyid",
+            "dmf_babyid",
+            "scr_pob",
+            "scr_sncu_sick",
+            "scr_del_mode",
+            "dmf_instance",
+            "dmf_kmc_dur",
+        ]
+    ]
+    .drop_duplicates()
+    .head(20)
+)
+
+print("\n" + "=" * 80)
+print("NULL KEY INVESTIGATION")
+print("=" * 80)
+
+eligibility = load_all_data()["eligibility"]
+mother = load_all_data()["mother"]
+daily = load_all_data()["daily"]
+
+print("Eligibility null IDs")
+print(
+    eligibility[
+        eligibility["scr_babyid"]
+        .astype(str)
+        .str.lower()
+        .eq("null")
+    ].shape[0]
+)
+
+print()
+
+print("Mother null IDs")
+print(
+    mother[
+        mother["enr_babyid"]
+        .astype(str)
+        .str.lower()
+        .eq("null")
+    ].shape[0]
+)
+
+
+
+print()
+
+print("Daily null IDs")
+print(
+    daily[
+        daily["dmf_babyid"]
+        .astype(str)
+        .str.lower()
+        .eq("null")
+    ].shape[0]
+)
+
+
+eligibility = load_all_data()["eligibility"]
+
+print("Rows:", len(eligibility))
+
+print("\nColumns:")
+print(eligibility.columns.tolist())
+
+print("\nBaby ID value counts:")
+print(
+    eligibility["scr_babyid"]
+    .value_counts(dropna=False)
+    .head(20)
+)
+
+print(
+    eligibility[
+        ["recordid", "scr_research_id", "scr_babyid"]
+    ].head(20)
+)
+
+print("\n" + "=" * 80)
+print("DISCHARGE DATASET")
+print("=" * 80)
+
+df = get_discharge_df()
+
+print("Rows:", len(df))
+print()
+
+print("Columns:")
+for col in df.columns:
+    print(col)
+
+print()
+
+print("First 5 Records")
+print(df.head())
+
+
+print("\n" + "=" * 80)
+print("DISCHARGE VALUE DISTRIBUTION")
+print("=" * 80)
+
+df = get_discharge_df()
+
+cols = [
+    "dis_befdis",
+    "dis_inf_outcome",
+    "dis_mom_outcome",
+    "dis_ssc",
+    "dis_dir_bf_24hrs",
+    "dis_exp_bm_24hrs",
+    "dis_al_feed_24hrs",
+    "dis_exclm_feed_24hrs",
+]
+
+for col in cols:
+    if col in df.columns:
+        print(f"\n{col}")
+        print(df[col].value_counts(dropna=False))
+
+
+print(
+    get_discharge_df()[
+        [
+            "dis_babyid",
+            "dis_inf_outcome",
+            "dis_befdis",
+            "dis_mom_outcome"
+        ]
+    ].head(30)
+)
+
+print("\n" + "=" * 80)
+print("DISCHARGE DATASET VALIDATION")
+print("=" * 80)
+
+print("Total Discharge Records :", len(get_discharge_df()))
+print("Merged Records          :", len(get_discharge_master_df()))
+print()
+
+print("Inborn                  :", len(get_inborn_discharge_df()))
+print("Outborn                 :", len(get_outborn_discharge_df()))
+print()
+
+print("Inborn NVD              :", len(get_inborn_nvd_discharge_df()))
+print("Inborn C-Section        :", len(get_inborn_csection_discharge_df()))
+print()
+
+print("Outborn NVD             :", len(get_outborn_nvd_discharge_df()))
+print("Outborn C-Section       :", len(get_outborn_csection_discharge_df()))
+
+print("\n" + "=" * 80)
+print("DISCHARGE DUPLICATE CHECK")
+print("=" * 80)
+
+df = get_discharge_master_df()
+
+dup = (
+    df["dis_babyid"]
+    .value_counts()
+)
+
+dup = dup[dup > 1]
+
+print("Duplicate babies:", len(dup))
+print()
+print(dup)
+
+
+print("\n" + "=" * 80)
+print("OVERALL DISCHARGE VALIDATION")
+print("=" * 80)
+
+print("Discharged :", get_total_discharged())
+print("Referred   :", get_total_referred())
+print("LAMA       :", get_total_lama())
+print("Death      :", get_total_death())
+
+print("\n" + "=" * 80)
+print("DISCHARGE BABIES MISSING AFTER MERGE")
+print("=" * 80)
+
+dis = get_discharge_df()
+master = get_discharge_master_df()
+
+discharged = set(
+    dis[
+        dis["dis_inf_outcome"] == 11
+    ]["dis_babyid"]
+)
+
+merged = set(
+    master[
+        master["dis_inf_outcome"] == 11
+    ]["dis_babyid"]
+)
+
+missing = discharged - merged
+
+print("Missing:", len(missing))
+print(sorted(missing))
+
+print("\n" + "=" * 80)
+print("DISCHARGED UNIQUE BABIES")
+print("=" * 80)
+
+df = get_discharge_df()
+
+print("Rows:")
+print(
+    len(
+        df[df["dis_inf_outcome"] == 11]
+    )
+)
+
+print()
+
+print("Unique Babies:")
+print(
+    df[
+        df["dis_inf_outcome"] == 11
+    ]["dis_babyid"]
+    .nunique()
+)
+
+print()
+
+dup = (
+    df[
+        df["dis_inf_outcome"] == 11
+    ]["dis_babyid"]
+    .value_counts()
+)
+
+dup = dup[dup > 1]
+
+print("Duplicate babies:", len(dup))
+print(dup)
+
+print("\n" + "=" * 80)
+print("INBORN NVD OUTCOMES")
+print("=" * 80)
+
+print("Discharged :", get_inborn_nvd_discharged())
+print("Referred   :", get_inborn_nvd_referred())
+print("LAMA       :", get_inborn_nvd_lama())
+print("Death      :", get_inborn_nvd_death())
+
+print("\n" + "=" * 80)
+print("INBORN C-SECTION OUTCOMES")
+print("=" * 80)
+
+print("Discharged :", get_inborn_csection_discharged())
+print("Referred   :", get_inborn_csection_referred())
+print("LAMA       :", get_inborn_csection_lama())
+print("Death      :", get_inborn_csection_death())
+
+print("\n" + "=" * 80)
+print("OUTBORN NVD OUTCOMES")
+print("=" * 80)
+
+print("Discharged :", get_outborn_nvd_discharged())
+print("Referred   :", get_outborn_nvd_referred())
+print("LAMA       :", get_outborn_nvd_lama())
+print("Death      :", get_outborn_nvd_death())
+
+print("\n" + "=" * 80)
+print("OUTBORN C-SECTION OUTCOMES")
+print("=" * 80)
+
+print("Discharged :", get_outborn_csection_discharged())
+print("Referred   :", get_outborn_csection_referred())
+print("LAMA       :", get_outborn_csection_lama())
+print("Death      :", get_outborn_csection_death())
+
+print("\n" + "=" * 80)
+print("PROGRAM CRITERIA vs DISCHARGE")
+print("=" * 80)
+
+criteria = set(
+    get_program_criteria_df()["dmf_babyid"].dropna().unique()
+)
+
+discharge = set(
+    get_discharge_df()["dis_babyid"].dropna().unique()
+)
+
+print("Program Criteria :", len(criteria))
+print("Discharge :", len(discharge))
+print("Common :", len(criteria & discharge))
+
+print("\n" + "=" * 80)
+print("STILL ADMITTED VALIDATION")
+print("=" * 80)
+
+df = get_enrollment_master_df()
+
+consented = (
+    df[
+        (df["scr_mconst"] == 11)
+        &
+        (df["scr_mconst_adm"] == 11)
+    ]["scr_babyid"]
+    .nunique()
+)
+
+discharged = (
+    get_discharge_df()["dis_babyid"]
+    .nunique()
+)
+
+print("Consented Babies :", consented)
+print("Discharged Babies:", discharged)
+print("Still Admitted   :", get_total_still_admitted())
