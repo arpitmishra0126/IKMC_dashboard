@@ -1,0 +1,15 @@
+/* Secondary text */
+[data-testid="stCaption"] {
+    color: var(--text-color);
+    opacity: 0.75;
+}
+
+/* Markdown text */
+.stMarkdown {
+    color: var(--text-color);
+}
+
+/* Labels */
+label {
+    color: var(--text-color);
+}
