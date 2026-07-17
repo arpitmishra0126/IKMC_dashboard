@@ -1,72 +1,138 @@
 /* ==========================================================
-   Global Typography
-   ========================================================== */
+   IKMC Dashboard - Global Styling
+   Supports both Light and Dark themes
+========================================================== */
 
-:root {
-    --dashboard-text-opacity: 0.92;
-    --dashboard-caption-size: 0.98rem;
-    --dashboard-body-size: 1rem;
-}
 
 /* ==========================================================
-   Streamlit Caption Styling
-   ========================================================== */
+   Global Typography
+========================================================== */
+
+:root {
+    --ikmc-font-size: 1rem;
+    --ikmc-caption-size: 1rem;
+    --ikmc-font-weight: 600;
+}
+
+
+/* ==========================================================
+   Caption Styling
+========================================================== */
 
 [data-testid="stCaptionContainer"] {
     opacity: 1 !important;
 }
 
 [data-testid="stCaptionContainer"] p {
-    color: var(--text-color) !important;
-    font-size: var(--dashboard-caption-size) !important;
+    font-size: 1rem !important;
     font-weight: 600 !important;
-    line-height: 1.5 !important;
-    opacity: var(--dashboard-text-opacity) !important;
+    line-height: 1.55 !important;
+
+    /* Works in both themes */
+    color: inherit !important;
+
+    opacity: 0.92 !important;
+
     margin: 0.15rem 0 !important;
 }
 
-/* ==========================================================
-   Markdown Text
-   ========================================================== */
 
-.stMarkdown,
-.stMarkdown p {
-    color: var(--text-color) !important;
-    font-size: var(--dashboard-body-size);
+/* ==========================================================
+   Markdown
+========================================================== */
+
+[data-testid="stMarkdownContainer"] {
+    color: inherit !important;
 }
+
+[data-testid="stMarkdownContainer"] p {
+    color: inherit !important;
+    font-size: 1rem !important;
+    line-height: 1.6;
+}
+
 
 /* ==========================================================
    Labels
-   ========================================================== */
+========================================================== */
 
 label {
-    color: var(--text-color) !important;
-    font-weight: 600;
+    color: inherit !important;
+    font-weight: 600 !important;
+    font-size: 0.96rem;
 }
 
+
 /* ==========================================================
-   Dashboard Meta Information
-   ========================================================== */
+   Inputs
+========================================================== */
+
+input,
+textarea,
+select {
+    font-size: 0.97rem;
+}
+
+
+/* ==========================================================
+   Dashboard Meta
+========================================================== */
 
 .dashboard-meta {
-    color: var(--text-color);
+    color: inherit;
     font-size: 1rem;
     font-weight: 600;
-    opacity: 0.92;
-    margin-bottom: 0.35rem;
+    line-height: 1.55;
+    margin-bottom: 0.4rem;
 }
 
 .dashboard-subtitle {
-    color: var(--text-color);
+    color: inherit;
     font-size: 1rem;
     font-weight: 500;
-    opacity: 0.88;
-    margin-bottom: 0.75rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
 }
 
 .dashboard-note {
-    color: var(--text-color);
-    font-size: 0.96rem;
+    color: inherit;
+    font-size: 0.95rem;
     font-weight: 500;
-    opacity: 0.88;
+    line-height: 1.55;
+}
+
+
+/* ==========================================================
+   KPI Titles
+========================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   Tables
+========================================================== */
+
+thead tr th {
+    font-weight: 700 !important;
+}
+
+
+/* ==========================================================
+   Metric Labels
+========================================================== */
+
+[data-testid="stMetricLabel"] {
+    font-weight: 600 !important;
+}
+
+[data-testid="stMetricValue"] {
+    font-weight: 700 !important;
 }
