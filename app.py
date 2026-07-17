@@ -203,4 +203,4 @@ with st.expander("🔍 View Validation Details"):
     st.dataframe(
         get_duplicate_discharge_df(),
         use_container_width=True
-    )
+    ) 

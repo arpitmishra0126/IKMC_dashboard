@@ -5,9 +5,9 @@ import pandas as pd
 import streamlit as st
 
 from services.config import FILES, DATA_SOURCE
+from services import api_service
 
 RAW_PATH = Path("data/raw")
-
 
 # ==========================================================
 # JSON LOADER
@@ -43,24 +43,22 @@ def load_json_data():
 
     return data
 
-
 # ==========================================================
-# MYSQL LOADER (Placeholder)
+# API LOADER 
 # ==========================================================
 
 @st.cache_data
-def load_mysql_data():
+def load_api_data():
     """
-    Load all datasets from MySQL.
-
-    This will be implemented after database
-    connection details are available.
+    Load all datasets from the backend API.
     """
 
-    raise NotImplementedError(
-        "MySQL loader has not been implemented yet."
-    )
-
+    return {
+        "eligibility": api_service.get_eligibility_data(),
+        "mother": api_service.get_mother_data(),
+        "daily": api_service.get_daily_data(),
+        "discharge": api_service.get_discharge_data(),
+    }
 
 # ==========================================================
 # MAIN LOADER
@@ -75,8 +73,8 @@ def load_all_data():
     if DATA_SOURCE.lower() == "json":
         return load_json_data()
 
-    elif DATA_SOURCE.lower() == "mysql":
-        return load_mysql_data()
+    elif DATA_SOURCE.lower() == "api":
+        return load_api_data()
 
     else:
         raise ValueError(
@@ -116,14 +114,7 @@ def inspect_json(filename):
 
 if __name__ == "__main__":
 
-    if DATA_SOURCE == "json":
+    datasets = load_all_data()
 
-        for filename in FILES.values():
-            inspect_json(filename)
-
-    else:
-
-        datasets = load_all_data()
-
-        for name, df in datasets.items():
-            print(f"{name}: {len(df)} rows")
+    for name, df in datasets.items():
+        print(f"{name}: {len(df)} rows")
