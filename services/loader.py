@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from datetime import datetime
 
 import pandas as pd
 import streamlit as st
@@ -47,19 +48,23 @@ def load_json_data():
 # API LOADER 
 # ==========================================================
 
+from datetime import datetime
+
 @st.cache_data
 def load_api_data():
     """
     Load all datasets from the backend API.
     """
 
+    sync_time = datetime.now()
+
     return {
         "eligibility": api_service.get_eligibility_data(),
         "mother": api_service.get_mother_data(),
         "daily": api_service.get_daily_data(),
         "discharge": api_service.get_discharge_data(),
+        "_last_sync": sync_time,
     }
-
 # ==========================================================
 # MAIN LOADER
 # ==========================================================
@@ -81,6 +86,9 @@ def load_all_data():
             f"Unsupported DATA_SOURCE: {DATA_SOURCE}"
         )
 
+def get_last_sync():
+    data = load_all_data()
+    return data["_last_sync"]
 
 # ==========================================================
 # DEBUG

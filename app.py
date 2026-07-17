@@ -4,7 +4,7 @@ from components.kpi_cards import kpi_card
 from components.cohort_summary import cohort_summary
 from components.filters import render_filters
 from components.dashboard_header import render_dashboard_header
-
+from services.loader import get_last_sync
 from services.indicators import *
 
 st.set_page_config(
@@ -18,7 +18,8 @@ st.set_page_config(
 
 render_dashboard_header(
     title="iKMC Monitoring System",
-    subtitle="Facility-wide monitoring of SSC, KMC, breastfeeding compliance, cohort performance, and discharge outcomes."
+    subtitle="Facility-wide monitoring of SSC, KMC, breastfeeding compliance, cohort performance, and discharge outcomes.",
+    data_sync_time=get_last_sync(),
 )
 
 # ==================================================
