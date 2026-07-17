@@ -1,4 +1,14 @@
 from pathlib import Path
+
+import streamlit as st
+
+from components.kpi_cards import kpi_card
+from components.cohort_summary import cohort_summary
+from components.filters import render_filters
+from components.dashboard_header import render_dashboard_header
+from services.loader import get_last_sync
+from services.indicators import *
+
 def load_css():
     css_file = Path("assets/styles.css")
 
@@ -9,21 +19,12 @@ def load_css():
                 unsafe_allow_html=True,
             )
             
-import streamlit as st
-
-from components.kpi_cards import kpi_card
-from components.cohort_summary import cohort_summary
-from components.filters import render_filters
-from components.dashboard_header import render_dashboard_header
-from services.loader import get_last_sync
-from services.indicators import *
-
 st.set_page_config(
     page_title="IKMC Dashboard",
     layout="wide"
 )
 
-
+load_css()
 
 # ==================================================
 # HEADER
