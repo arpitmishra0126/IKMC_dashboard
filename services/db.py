@@ -1,7 +1,3 @@
-"""
-Database connection utilities.
-"""
-
 import mysql.connector
 
 from services.config import DB_CONFIG

@@ -7,114 +7,72 @@ def get_eligibility_df():
     data = load_all_data()
     return data["eligibility"]
 
-
 # ==================================================
 # BASE DATASETS - DASHBOARD MEASURES
 # ==================================================
 
 def get_prescreened_df():
-
     return get_eligibility_df().copy()
 
 
 def get_alive_df():
-
     df = get_prescreened_df()
 
-    return df[
-        df["scr_status_baby"] == 11
-    ]
-
+    return df[ df["scr_status_baby"] == 11]
 
 def get_preterm_lbw_df():
-
     df = get_alive_df().copy()
 
     return df[
-        (
-            (df["scr_birthweight"] < 2500)
-            |
-            (df["scr_inf_ga_weeks"] < 37)
-        )
-    ]
-
+        ((df["scr_birthweight"] < 2500) | (df["scr_inf_ga_weeks"] < 37))
+        ]
 
 def get_valid_admission_df():
-
     df = get_preterm_lbw_df().copy()
 
     return df[
-        (
-            (df["scr_pob"] == 11)
-        )
-        |
-        (
-            (df["scr_pob"].isin([12, 13, 14]))
-            &
-            (df["scr_baby_reach_24hrs"] == 11)
-        )
-    ]
+            ((df["scr_pob"] == 11)) | 
+            ((df["scr_pob"].isin([12, 13, 14])) & (df["scr_baby_reach_24hrs"] == 11) )
+             ]
 
 
 def get_eligible_df():
-
     df = get_valid_admission_df().copy()
-
-    return df[
-        df["scr_mconst_adm"] == 11
-    ]
-
+    return df[df["scr_mconst_adm"] == 11]
 
 def get_consented_df():
-
     df = get_eligible_df().copy()
-
-    return df[
-        df["scr_mconst"] == 11
-    ]
+    return df[df["scr_mconst"] == 11]
 
 def get_enrolled_df():
-
     df = get_consented_df().copy()
-
-    return df[
-        df["scr_bw_ga_stable"] == 12
-    ]
+    return df[df["scr_bw_ga_stable"] == 12]
 
 def get_total_enrolled():
-
-    return len(
-        get_enrolled_df()
-    )
+    return len(get_enrolled_df())
 
 # ==================================================
 # TOP KPI CARDS
 # ==================================================
 
 def get_total_screening_records():
-
     return len(get_prescreened_df())
 
 
 def get_total_alive_babies():
-
     return len(get_alive_df())
 
 
 def get_total_screened():
-
     return len(get_preterm_lbw_df())
 
 
 def get_total_eligible():
-
     return len(get_eligible_df())
 
 
 def get_total_consented():
-
     return len(get_consented_df())
-
 
 # ==================================================
 # COHORT COUNTS
@@ -128,32 +86,18 @@ def get_outborn_count():
     df = get_outborn_df()
     return df["scr_babyid"].nunique()
 
-
 # ==================================================
 # SNCU COUNTS
 # ==================================================
 
 def get_msncu_count():
-
     df = get_eligible_df()
-
-    return len(
-        df[
-            df["scr_sncu_sick"] == 11
-        ]
-    )
+    return len(df[df["scr_sncu_sick"] == 11])
 
 
 def get_pnc_count():
-
     df = get_eligible_df()
-
-    return len(
-        df[
-            df["scr_sncu_sick"] == 12
-        ]
-    )
-
+    return len(df[df["scr_sncu_sick"] == 12])
 
 def get_inborn_df():
     df = get_eligibility_df()
@@ -167,23 +111,18 @@ def get_inborn_df():
 #         df["scr_pob"] == 12
 #     ]
 
-
 # ==================================================
 # SNCU DATASETS
 # ==================================================
 
 def get_msncu_df():
-
     df = get_eligibility_df()
-
     return df[df["scr_sncu_sick"] == 11]
 
 
 def get_pnc_df():
-
     df = get_eligibility_df()
     return df[df["scr_sncu_sick"] == 12]
-
 
 # ==================================================
 # MSNCU COUNTS
@@ -192,16 +131,13 @@ def get_pnc_df():
 def get_msncu_total_cases():
     return get_msncu_master_df()["dmf_babyid"].nunique()
 
-
 def get_msncu_nvd_count():
     df = get_msncu_nvd_df()
     return df["dmf_babyid"].nunique()
 
-
 def get_msncu_csection_count():
     df = get_msncu_csection_df()
     return df["dmf_babyid"].nunique()
-
 
 # ==================================================
 # PNC COUNTS
@@ -210,11 +146,9 @@ def get_msncu_csection_count():
 def get_pnc_total_cases():
     return get_pnc_master_df()["dmf_babyid"].nunique()
 
-
 def get_pnc_nvd_count():
     df = get_pnc_nvd_df()
     return df["dmf_babyid"].nunique()
-
 
 def get_pnc_csection_count():
     df = get_pnc_csection_df()
@@ -232,41 +166,25 @@ def get_mother_df():
 def get_total_ssc_received():
     df = get_mother_df()
 
-    return len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
-
+    return len(df[df["enr_ssc_rec"] == 11])
 
 def get_total_ssc_not_received():
     df = get_mother_df()
 
-    return len(
-        df[
-            df["enr_ssc_rec"] == 12
-        ]
-    )
+    return len(df[df["enr_ssc_rec"] == 12])
 
 
 def get_ssc_percentage():
     df = get_mother_df()
 
     total = len(df)
-
     if total == 0:
         return 0
 
     received = len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
+        df[df["enr_ssc_rec"] == 11])
 
-    return round(
-        (received / total) * 100,
-        1
-    )
+    return round((received / total) * 100,1)
 
 # ==================================================
 # KMC INDICATORS
@@ -278,22 +196,14 @@ def get_daily_df():
     
 def get_avg_kmc_minutes():
     df = get_daily_df()
-
-    return round(
-        df["dmf_kmc_dur"].mean(),
-        1
-    )
-
+    return round(df["dmf_kmc_dur"].mean(),1)
 
 def get_avg_kmc_hours():
-
     df = get_daily_df()
 
     avg_minutes = df["dmf_kmc_dur"].mean()
-
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 # ==================================================
@@ -301,7 +211,6 @@ def get_avg_kmc_hours():
 # ==================================================
 
 def get_master_df():
-
     data = load_all_data()
 
     eligibility = data["eligibility"]
@@ -326,7 +235,6 @@ def get_master_df():
 
 
 def test_master_df():
-
     df = get_master_df()
 
     print("ROWS:", len(df))
@@ -334,13 +242,11 @@ def test_master_df():
 
     print(df.head())
 
-
 # ==================================================
 # ENROLLMENT MASTER DATASET
 # ==================================================
 
 def get_enrollment_master_df():
-
     data = load_all_data()
 
     eligibility = data["eligibility"]
@@ -369,215 +275,145 @@ def get_pnc_master_df():
 
 
 def get_msncu_nvd_df():
-
     df = get_msncu_master_df()
-
     return df[df[FIELD_MAP["delivery_mode"]].isin([11, 12])]
 
 
 def get_msncu_csection_df():
-
     df = get_msncu_master_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 13
-    ]
+    return df[df[FIELD_MAP["delivery_mode"]] == 13]
 
 
 def get_pnc_nvd_df():
-
     df = get_pnc_master_df()
-
     return df[ df[FIELD_MAP["delivery_mode"]].isin([11, 12])]
 
 
 def get_pnc_csection_df():
-
     df = get_pnc_master_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 13
-    ]
-
+    return df[df[FIELD_MAP["delivery_mode"]] == 13]
 
 # ==================================================
 # ENROLLMENT FILTERED DATASETS
 # ==================================================
 
 def get_msncu_enrollment_df():
-
     df = get_enrollment_master_df()
-
-    return df[
-        df[FIELD_MAP["sncu_type"]] == 11
-    ]
-
+    return df[df[FIELD_MAP["sncu_type"]] == 11]
 
 def get_pnc_enrollment_df():
-
     df = get_enrollment_master_df()
-
-    return df[
-        df[FIELD_MAP["sncu_type"]] == 12
-    ]
+    return df[df[FIELD_MAP["sncu_type"]] == 12]
 
 
 def get_msncu_nvd_enrollment_df():
-
     df = get_msncu_enrollment_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 11
-    ]
+    return df[df[FIELD_MAP["delivery_mode"]] == 11]
 
 
 def get_msncu_csection_enrollment_df():
-
     df = get_msncu_enrollment_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 13
-    ]
+    return df[df[FIELD_MAP["delivery_mode"]] == 13]
 
 
 def get_pnc_nvd_enrollment_df():
-
     df = get_pnc_enrollment_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 11
-    ]
+    return df[df[FIELD_MAP["delivery_mode"]] == 11]
 
 
 def get_pnc_csection_enrollment_df():
-
     df = get_pnc_enrollment_df()
-
-    return df[
-        df[FIELD_MAP["delivery_mode"]] == 13
-    ]
-
+    return df[df[FIELD_MAP["delivery_mode"]] == 13]
 
 # ==================================================
 # AVG KMC
 # ==================================================
 
 def get_msncu_avg_kmc():
-
     df = get_msncu_master_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_pnc_avg_kmc():
-
     df = get_pnc_master_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
-
+    
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
-
 
 # ==================================================
 # OUTBORN AVG KMC
 # ==================================================
 
 def get_outborn_avg_kmc():
-
     df = get_outborn_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_outborn_nvd_avg_kmc():
-
     df = get_outborn_nvd_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_outborn_csection_avg_kmc():
-
     df = get_outborn_csection_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
-
 
 # ==================================================
 # DELIVERY MODE AVG KMC
 # ==================================================
 
 def get_msncu_nvd_avg_kmc():
-
     df = get_msncu_nvd_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_msncu_csection_avg_kmc():
-
     df = get_msncu_csection_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_pnc_nvd_avg_kmc():
-
     df = get_pnc_nvd_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
 
 
 def get_pnc_csection_avg_kmc():
-
     df = get_pnc_csection_df()
-
     avg_minutes = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg_minutes):
         return 0
-
     return round(avg_minutes / 60, 1)
-
-
 
 # ==================================================
 # OVERVIEW AVG KMC
@@ -585,224 +421,124 @@ def get_pnc_csection_avg_kmc():
 
 def get_inborn_nvd_avg_kmc():
 
-    df = pd.concat(
-        [
-            get_msncu_nvd_df(),
-            get_pnc_nvd_df()
-        ],
-        ignore_index=True
-    )
+    df = pd.concat([get_msncu_nvd_df(),get_pnc_nvd_df()],ignore_index=True)
 
     avg = df["dmf_kmc_dur"].mean()
-
     if pd.isna(avg):
         return 0
-
     return round(avg / 60, 1)
 
 
 def get_inborn_csection_avg_kmc():
 
-    df = pd.concat(
-        [
-            get_msncu_csection_df(),
-            get_pnc_csection_df()
-        ],
-        ignore_index=True
-    )
+    df = pd.concat([get_msncu_csection_df(),get_pnc_csection_df()],ignore_index=True)
 
     avg = df["dmf_kmc_dur"].mean()
 
     if pd.isna(avg):
         return 0
-
     return round(avg / 60, 1)
-
 
 # ==================================================
 # EXCLUSIVE BREASTFEEDING
 # ==================================================
 
 def get_msncu_nvd_bf_count():
-
     df = get_msncu_nvd_enrollment_df()
-
-    return len(
-        df[
-            df["enr_bf_bentfed"] == 11
-        ]
-    )
-
+    return len(df[df["enr_bf_bentfed"] == 11])
 
 def get_msncu_csection_bf_count():
-
     df = get_msncu_csection_enrollment_df()
-
-    return len(
-        df[
-            df["enr_bf_bentfed"] == 11
-        ]
-    )
+    return len(df[df["enr_bf_bentfed"] == 11])
 
 
 def get_pnc_nvd_bf_count():
-
     df = get_pnc_nvd_enrollment_df()
-
-    return len(
-        df[
-            df["enr_bf_bentfed"] == 11
-        ]
-    )
+    return len(df[df["enr_bf_bentfed"] == 11])
 
 
 def get_pnc_csection_bf_count():
-
     df = get_pnc_csection_enrollment_df()
-
-    return len(
-        df[
-            df["enr_bf_bentfed"] == 11
-        ]
-    )
+    return len(df[ df["enr_bf_bentfed"] == 11] )
 
 # ==================================================
 # SSC RECEIVED
 # ==================================================
 
 def get_msncu_nvd_ssc_count():
-
     df = get_msncu_nvd_enrollment_df()
-
-    return len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
-
+    return len(df[df["enr_ssc_rec"] == 11])
 
 def get_msncu_csection_ssc_count():
-
     df = get_msncu_csection_enrollment_df()
-
-    return len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
-
+    return len(df[df["enr_ssc_rec"] == 11])
 
 def get_pnc_nvd_ssc_count():
-
     df = get_pnc_nvd_enrollment_df()
-
-    return len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
-
+    return len(df[df["enr_ssc_rec"] == 11])
 
 def get_pnc_csection_ssc_count():
-
     df = get_pnc_csection_enrollment_df()
-
-    return len(
-        df[
-            df["enr_ssc_rec"] == 11
-        ]
-    )
+    return len(df[df["enr_ssc_rec"] == 11])
 
 # ==================================================
 # ATTACHMENT AGE
 # ==================================================
 
 def get_msncu_nvd_attachment_hours():
-
     df = get_msncu_nvd_enrollment_df().copy()
-
-    df = df[
-        df["enr_bf_bentfed_hw_dt"].notna()
-    ]
+    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
 
     if len(df) == 0:
         return 0
 
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str)+ " "+ df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(df["enr_bf_bentfed_hw_dt"].astype(str)+ " "+ df["enr_bf_bentfed_hw_tm"].astype(str),errors="coerce")
-
     hours = (attach_dt - birth_dt).dt.total_seconds() / 3600
     hours = hours.dropna()
-
     return round(hours.mean(), 1)
 
 
 def get_msncu_csection_attachment_hours():
-
     df = get_msncu_csection_enrollment_df().copy()
-
-    df = df[
-        df["enr_bf_bentfed_hw_dt"].notna()
-    ]
+    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
 
     if len(df) == 0:
         return 0
 
-   
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str)+ " "+ df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(df["enr_bf_bentfed_hw_dt"].astype(str)+ " "+ df["enr_bf_bentfed_hw_tm"].astype(str),errors="coerce")
-
-
     hours = (attach_dt - birth_dt).dt.total_seconds() / 3600
     hours = hours.dropna()
-
     return round(hours.mean(), 1)
 
 
 def get_pnc_nvd_attachment_hours():
-
     df = get_pnc_nvd_enrollment_df().copy()
-
-    df = df[
-        df["enr_bf_bentfed_hw_dt"].notna()
-    ]
+    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
 
     if len(df) == 0:
         return 0
 
-    
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str)+ " "+ df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(df["enr_bf_bentfed_hw_dt"].astype(str)+ " "+ df["enr_bf_bentfed_hw_tm"].astype(str),errors="coerce")
-
-
     hours = (attach_dt - birth_dt).dt.total_seconds() / 3600
     hours = hours.dropna()
-
     return round(hours.mean(), 1)
 
 
 def get_pnc_csection_attachment_hours():
-
     df = get_pnc_csection_enrollment_df().copy()
-
-    df = df[
-        df["enr_bf_bentfed_hw_dt"].notna()
-    ]
+    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
 
     if len(df) == 0:
         return 0
-
-  
+    
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str)+ " "+ df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(df["enr_bf_bentfed_hw_dt"].astype(str)+ " "+ df["enr_bf_bentfed_hw_tm"].astype(str),errors="coerce")
-
-
     hours = (attach_dt - birth_dt).dt.total_seconds() / 3600
     hours = hours.dropna()
-
     return round(hours.mean(), 1)
-
-
 
 # ==================================================
 # OVERVIEW ATTACHMENT AGE
@@ -810,11 +546,7 @@ def get_pnc_csection_attachment_hours():
 
 def get_inborn_nvd_attachment_hours():
 
-    values = [
-        get_msncu_nvd_attachment_hours(),
-        get_pnc_nvd_attachment_hours()
-    ]
-
+    values = [get_msncu_nvd_attachment_hours(), get_pnc_nvd_attachment_hours()]
     values = [v for v in values if v > 0]
 
     if len(values) == 0:
@@ -825,18 +557,13 @@ def get_inborn_nvd_attachment_hours():
 
 def get_inborn_csection_attachment_hours():
 
-    values = [
-        get_msncu_csection_attachment_hours(),
-        get_pnc_csection_attachment_hours()
-    ]
-
+    values = [get_msncu_csection_attachment_hours(), get_pnc_csection_attachment_hours()]
     values = [v for v in values if v > 0]
 
     if len(values) == 0:
         return 0
 
     return round(sum(values) / len(values), 1)
-
 
 # ==================================================
 # SSC WITHIN 2 HOURS
@@ -845,31 +572,13 @@ def get_inborn_csection_attachment_hours():
 def get_ssc_under_2h_df():
 
     df = get_enrollment_master_df().copy()
+    df = df[df["enr_ssc_rec"] == 11]
 
-    df = df[
-        df["enr_ssc_rec"] == 11
-    ]
+    birth_dt = pd.to_datetime(df["scr_dob"].astype(str)+ " "+ df["scr_tob"].astype(str) )
+    ssc_dt = pd.to_datetime(df["enr_ssc_init_dt"].astype(str) + " "+ df["enr_ssc_init_tm"].astype(str))
 
-    birth_dt = pd.to_datetime(
-        df["scr_dob"].astype(str)
-        + " "
-        + df["scr_tob"].astype(str)
-    )
-
-    ssc_dt = pd.to_datetime(
-        df["enr_ssc_init_dt"].astype(str)
-        + " "
-        + df["enr_ssc_init_tm"].astype(str)
-    )
-
-    df["ssc_hours_diff"] = (
-        ssc_dt - birth_dt
-    ).dt.total_seconds() / 3600
-
-    return df[
-        df["ssc_hours_diff"] <= 2
-    ]
-
+    df["ssc_hours_diff"] = (ssc_dt - birth_dt).dt.total_seconds() / 3600
+    return df[ df["ssc_hours_diff"] <= 2]
 
 # ==================================================
 # MSNCU SSC <2H
@@ -878,28 +587,16 @@ def get_ssc_under_2h_df():
 def get_msncu_nvd_ssc_under_2h_count():
 
     df = get_ssc_under_2h_df()
-
-    df = df[
-        (df["scr_sncu_sick"] == 11)
-        &
-        (df["scr_del_mode"].isin([11, 12]))
-    ]
+    df = df[(df["scr_sncu_sick"] == 11)&(df["scr_del_mode"].isin([11, 12]))]
 
     return len(df)
-
 
 def get_msncu_csection_ssc_under_2h_count():
 
     df = get_ssc_under_2h_df()
-
-    df = df[
-        (df["scr_sncu_sick"] == 11)
-        &
-        (df["scr_del_mode"] == 13)
-    ]
+    df = df[(df["scr_sncu_sick"] == 11)&(df["scr_del_mode"] == 13)]
 
     return len(df)
-
 
 # ==================================================
 # OUTBORN SSC <2H
@@ -922,25 +619,14 @@ def get_outborn_csection_ssc_under_2h_count():
 def get_pnc_nvd_ssc_under_2h_count():
 
     df = get_ssc_under_2h_df()
-
-    df = df[
-        (df["scr_sncu_sick"] == 12)
-        &
-        (df["scr_del_mode"].isin([11, 12]))
-    ]
+    df = df[(df["scr_sncu_sick"] == 12)&(df["scr_del_mode"].isin([11, 12]))]
 
     return len(df)
-
 
 def get_pnc_csection_ssc_under_2h_count():
 
     df = get_ssc_under_2h_df()
-
-    df = df[
-        (df["scr_sncu_sick"] == 12)
-        &
-        (df["scr_del_mode"] == 13)
-    ]
+    df = df[(df["scr_sncu_sick"] == 12)&(df["scr_del_mode"] == 13)]
 
     return len(df)
 
@@ -950,7 +636,6 @@ def get_pnc_csection_ssc_under_2h_count():
 # ==================================================
 
 def get_program_criteria_df():
-
     df = get_master_df().copy()
 
     df = df[
@@ -1105,39 +790,23 @@ def get_inborn_csection_bf_count():
 def get_outborn_df():
 
     df = get_master_df().copy()
-
-    df = df[
-        df["scr_pob"].isin([12, 13, 14])
-    ]
+    df = df[df["scr_pob"].isin([12, 13, 14])]
 
     return df
-
 
 # ==================================================
 # OUTBORN COUNTS
 # ==================================================
 
 def get_outborn_total_cases():
-
     df = get_outborn_df()
-
     return df["dmf_babyid"].nunique()
 
-
 def get_outborn_nvd_count():
-
-    return (
-        get_outborn_nvd_df()["dmf_babyid"]
-        .nunique()
-    )
-
+    return ( get_outborn_nvd_df()["dmf_babyid"].nunique() )
 
 def get_outborn_csection_count():
-
-    return (
-        get_outborn_csection_df()["dmf_babyid"]
-        .nunique()
-    )
+    return (get_outborn_csection_df()["dmf_babyid"].nunique())
 
 # ==================================================
 # OUTBORN DELIVERY MODE DFS
@@ -1736,14 +1405,11 @@ def get_merge_mismatch_count():
 
     return len(screening_ids - master_ids)
 
-
 # ==================================================
 # VALIDATION STATUS
 # ==================================================
 
-st.caption(
-    "Quality indicators highlighting potential data completeness and integrity issues."
-)
+st.caption("Quality indicators highlighting potential data completeness and integrity issues.")
 
 def get_validation_status():
 
@@ -1765,7 +1431,6 @@ def get_validation_status():
 # ==================================================
 
 def get_missing_babyid_df():
-
     df = get_eligibility_df()
 
     return df[
@@ -1805,17 +1470,10 @@ def get_duplicate_babyid_df():
     ]
 
 def get_duplicate_discharge_df():
-
     df = get_discharge_master_df()
 
-    dup_ids = df.loc[
-        df["scr_babyid"].duplicated(keep=False),
-        "scr_babyid"
-    ].unique()
-
-    result = df[
-        df["scr_babyid"].isin(dup_ids)
-    ].copy()
+    dup_ids = df.loc[df["scr_babyid"].duplicated(keep=False), "scr_babyid"].unique()
+    result = df[df["scr_babyid"].isin(dup_ids)].copy()
 
     result["Duplicate Records"] = (
         result.groupby("scr_babyid")["scr_babyid"]
@@ -1836,21 +1494,10 @@ def get_duplicate_discharge_df():
     ].sort_values("scr_babyid")  
 
 def get_missing_dailycare_df():
-
     screening = get_eligibility_df()
 
-    screening_ids = set(
-        screening[
-            screening["scr_babyid"] != "null"
-        ]["scr_babyid"]
-        .dropna()
-    )
-
-    daily_ids = set(
-        get_master_df()["dmf_babyid"]
-        .dropna()
-    )
-
+    screening_ids = set(screening[screening["scr_babyid"] != "null"]["scr_babyid"].dropna())
+    daily_ids = set( get_master_df()["dmf_babyid"].dropna())
     missing = screening_ids - daily_ids
 
     return screening[
@@ -1866,19 +1513,9 @@ def get_missing_dailycare_df():
 def get_merge_mismatch_df():
 
     screening = get_eligibility_df()
+    screening_ids = set(screening[screening["scr_babyid"] != "null"]["scr_babyid"].dropna())
 
-    screening_ids = set(
-        screening[
-            screening["scr_babyid"] != "null"
-        ]["scr_babyid"]
-        .dropna()
-    )
-
-    master_ids = set(
-        get_master_df()["scr_babyid"]
-        .dropna()
-    )
-
+    master_ids = set( get_master_df()["scr_babyid"].dropna())
     mismatch = screening_ids - master_ids
 
     return screening[
