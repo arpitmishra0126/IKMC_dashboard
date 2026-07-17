@@ -1,18 +1,21 @@
 import json
-import pandas as pd
-import streamlit as st
 from pathlib import Path
 
-from services.config import FILES
+import pandas as pd
+import streamlit as st
+
+from services.config import FILES, DATA_SOURCE
+from services import api_service
 
 RAW_PATH = Path("data/raw")
 
+# ==========================================================
+# JSON LOADER
+# ==========================================================
 
 @st.cache_data
 def load_json(filename):
-    """
-    Load a JSON file from data/raw and return raw data.
-    """
+    """Load a JSON file from data/raw and return raw data."""
     filepath = RAW_PATH / filename
 
     with open(filepath, "r", encoding="utf-8") as f:
@@ -22,18 +25,66 @@ def load_json(filename):
 
 
 @st.cache_data
-def load_all_data():
+def load_json_data():
     """
-    Load all source datasets and return them as DataFrames.
+    Load all datasets from local JSON files.
     """
 
     data = {}
 
     for key, filename in FILES.items():
-        data[key] = pd.DataFrame(load_json(filename))
+
+        df = pd.DataFrame(load_json(filename))
+
+        if "deleted" in df.columns:
+            df = df[df["deleted"].fillna(0) != 1]
+
+        data[key] = df
 
     return data
 
+# ==========================================================
+# API LOADER 
+# ==========================================================
+
+@st.cache_data
+def load_api_data():
+    """
+    Load all datasets from the backend API.
+    """
+
+    return {
+        "eligibility": api_service.get_eligibility_data(),
+        "mother": api_service.get_mother_data(),
+        "daily": api_service.get_daily_data(),
+        "discharge": api_service.get_discharge_data(),
+    }
+
+# ==========================================================
+# MAIN LOADER
+# ==========================================================
+
+@st.cache_data
+def load_all_data():
+    """
+    Load data from the configured source.
+    """
+
+    if DATA_SOURCE.lower() == "json":
+        return load_json_data()
+
+    elif DATA_SOURCE.lower() == "api":
+        return load_api_data()
+
+    else:
+        raise ValueError(
+            f"Unsupported DATA_SOURCE: {DATA_SOURCE}"
+        )
+
+
+# ==========================================================
+# DEBUG
+# ==========================================================
 
 def inspect_json(filename):
     """
@@ -63,5 +114,7 @@ def inspect_json(filename):
 
 if __name__ == "__main__":
 
-    for filename in FILES.values():
-        inspect_json(filename)
+    datasets = load_all_data()
+
+    for name, df in datasets.items():
+        print(f"{name}: {len(df)} rows")

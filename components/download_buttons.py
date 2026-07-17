@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+import io
 
 def render_download_button(data: pd.DataFrame, filename: str, format: str = "csv"):
     """
