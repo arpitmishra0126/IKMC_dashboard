@@ -1,5 +1,28 @@
 # services/config.py
 
+# -------------------------------------------------
+# Data Source
+# -------------------------------------------------
+DATA_SOURCE = "json"
+
+DB_CONFIG = {
+    "host": "",
+    "port": 3306,
+    "database": "",
+    "user": "",
+    "password": "",
+}
+
+# -------------------------------------------------
+# Database Tables
+# -------------------------------------------------
+TABLES = {
+    "eligibility": "",
+    "mother": "",
+    "daily": "",
+    "discharge": "",
+}
+
 FILES = {
     "eligibility": "eligibility-registration.json",
     "mother": "mother-baby-registration.json",
