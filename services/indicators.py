@@ -1,6 +1,7 @@
 from services.loader import load_all_data
 from services.config import FIELD_MAP
 import pandas as pd
+import streamlit as st
 
 def get_eligibility_df():
     data = load_all_data()
@@ -1649,3 +1650,243 @@ def get_total_still_admitted():
     )
 
     return consented - discharged
+
+# ==================================================
+# DATA QUALITY
+# ==================================================
+
+def get_missing_babyid_count():
+
+    df = get_eligibility_df()
+
+    return (
+        df["scr_babyid"]
+        .isin(["null"])
+        .sum()
+    )
+
+def get_duplicate_babyid_count():
+
+    df = get_eligibility_df()
+
+    ids = df[
+        ~df["scr_babyid"].isin(["null"])
+    ]["scr_babyid"]
+
+    return (
+        ids
+        .duplicated()
+        .sum()
+    )
+
+def get_duplicate_discharge_count():
+
+    df = get_discharge_df()
+
+    return (
+        df["dis_babyid"]
+        .duplicated()
+        .sum()
+    )
+
+def get_missing_dailycare_count():
+
+    screening = get_eligibility_df()
+
+    screening_ids = set(
+        screening[
+            screening["scr_babyid"] != "null"
+        ]["scr_babyid"]
+        .dropna()
+    )
+
+    daily_ids = set(
+        get_master_df()["dmf_babyid"]
+        .dropna()
+    )
+
+    return len(screening_ids - daily_ids)
+
+def get_missing_outcome_count():
+
+    df = get_discharge_master_df()
+
+    valid = [11, 12, 13, 14]
+
+    return (
+        ~df["dis_inf_outcome"]
+        .isin(valid)
+    ).sum()
+
+def get_merge_mismatch_count():
+
+    screening = get_eligibility_df()
+
+    screening_ids = set(
+        screening[
+            screening["scr_babyid"] != "null"
+        ]["scr_babyid"]
+        .dropna()
+    )
+
+    master_ids = set(
+        get_master_df()["scr_babyid"]
+        .dropna()
+    )
+
+    return len(screening_ids - master_ids)
+
+
+# ==================================================
+# VALIDATION STATUS
+# ==================================================
+
+st.caption(
+    "Quality indicators highlighting potential data completeness and integrity issues."
+)
+
+def get_validation_status():
+
+    duplicate_discharge = get_duplicate_discharge_count()
+    merge_mismatch = get_merge_mismatch_count()
+    missing_daily = get_missing_dailycare_count()
+
+    if (
+        duplicate_discharge == 0
+        and merge_mismatch == 0
+        and missing_daily == 0
+    ):
+        return "🟢 Healthy"
+
+    return "🟡 Review Required"
+
+# ==================================================
+# DATA QUALITY DATAFRAMES
+# ==================================================
+
+def get_missing_babyid_df():
+
+    df = get_eligibility_df()
+
+    return df[
+        df["scr_babyid"] == "null"
+    ][
+        [
+            "recordid",
+            "scr_research_id",
+            "scr_babyid",
+            "site_id",
+            "facility_id"
+        ]
+    ]
+
+def get_duplicate_babyid_df():
+
+    df = get_eligibility_df()
+
+    df = df[
+        df["scr_babyid"] != "null"
+    ]
+
+    dup_ids = df[
+        df["scr_babyid"].duplicated(keep=False)
+    ]["scr_babyid"].unique()
+
+    return df[
+        df["scr_babyid"].isin(dup_ids)
+    ][
+        [
+            "scr_babyid",
+            "recordid",
+            "scr_research_id",
+            "site_id",
+            "facility_id"
+        ]
+    ]
+
+def get_duplicate_discharge_df():
+
+    df = get_discharge_master_df()
+
+    dup_ids = df.loc[
+        df["scr_babyid"].duplicated(keep=False),
+        "scr_babyid"
+    ].unique()
+
+    result = df[
+        df["scr_babyid"].isin(dup_ids)
+    ].copy()
+
+    result["Duplicate Records"] = (
+        result.groupby("scr_babyid")["scr_babyid"]
+        .transform("count")
+    )
+
+    return result[
+        [
+            "scr_babyid",
+            "recordid_x",
+            "dis_dof",
+            "dis_inf_outcome",
+            "scr_research_id",
+            "site_id_y",
+            "facility_id_y",
+            "Duplicate Records",
+        ]
+    ].sort_values("scr_babyid")  
+
+def get_missing_dailycare_df():
+
+    screening = get_eligibility_df()
+
+    screening_ids = set(
+        screening[
+            screening["scr_babyid"] != "null"
+        ]["scr_babyid"]
+        .dropna()
+    )
+
+    daily_ids = set(
+        get_master_df()["dmf_babyid"]
+        .dropna()
+    )
+
+    missing = screening_ids - daily_ids
+
+    return screening[
+        screening["scr_babyid"].isin(missing)
+    ][[
+        "recordid",
+        "scr_research_id",
+        "scr_babyid",
+        "site_id",
+        "facility_id"
+    ]]
+
+def get_merge_mismatch_df():
+
+    screening = get_eligibility_df()
+
+    screening_ids = set(
+        screening[
+            screening["scr_babyid"] != "null"
+        ]["scr_babyid"]
+        .dropna()
+    )
+
+    master_ids = set(
+        get_master_df()["scr_babyid"]
+        .dropna()
+    )
+
+    mismatch = screening_ids - master_ids
+
+    return screening[
+        screening["scr_babyid"].isin(mismatch)
+    ][[
+        "recordid",
+        "scr_research_id",
+        "scr_babyid",
+        "site_id",
+        "facility_id"
+    ]]

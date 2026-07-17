@@ -114,3 +114,93 @@ with right:
         attachment_nvd="1h 55m",
         attachment_csection="3h 45m",
     )
+
+    # ==================================================
+# DATA QUALITY
+# ==================================================
+
+st.divider()
+
+st.markdown("## System Validation & Data Quality")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    kpi_card(
+        "SCREENING RECORDS WITHOUT BABY IDs",
+        get_missing_babyid_count()
+    )
+
+with col2:
+    kpi_card(
+        "DUPLICATE BABIES",
+        get_duplicate_babyid_count()
+    )
+
+with col3:
+    kpi_card(
+        "UNMATCHED RECORDS",
+        get_merge_mismatch_count()
+    )
+st.caption(
+    "Summary of data completeness and integrity checks performed across source datasets."
+)
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    kpi_card(
+        "MISSING DAILY CARE",
+        get_missing_dailycare_count()
+    )
+
+with col2:
+    kpi_card(
+        "DISCHARGE DUPLICATES",
+        get_duplicate_discharge_count()
+    )
+
+with col3:
+    kpi_card(
+        "VALIDATION STATUS",
+        get_validation_status()
+    )
+
+
+st.markdown("---")
+
+with st.expander("🔍 View Validation Details"):
+
+    st.subheader("Screening Records Without Baby IDs")
+
+    st.dataframe(
+        get_missing_babyid_df(),
+        use_container_width=True
+    )
+
+    st.subheader("Duplicate Baby IDs")
+
+    st.dataframe(
+        get_duplicate_babyid_df(),
+        use_container_width=True
+    )
+
+    st.subheader("Merge Mismatches")
+
+    st.dataframe(
+        get_merge_mismatch_df(),
+        use_container_width=True
+    )
+
+    st.subheader("Missing Daily Care")
+
+    st.dataframe(
+        get_missing_dailycare_df(),
+        use_container_width=True
+    )
+
+    st.subheader("Duplicate Discharge Records")
+
+    st.dataframe(
+        get_duplicate_discharge_df(),
+        use_container_width=True
+    )

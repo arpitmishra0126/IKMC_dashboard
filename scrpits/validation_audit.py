@@ -956,3 +956,67 @@ discharged = (
 print("Consented Babies :", consented)
 print("Discharged Babies:", discharged)
 print("Still Admitted   :", get_total_still_admitted())
+
+print("\n" + "=" * 80)
+print("DATA QUALITY")
+print("=" * 80)
+
+print("Missing Baby IDs        :", get_missing_babyid_count())
+print("Duplicate Baby IDs      :", get_duplicate_babyid_count())
+print("Duplicate Discharge     :", get_duplicate_discharge_count())
+print("Missing Daily Care      :", get_missing_dailycare_count())
+print("Missing Outcomes        :", get_missing_outcome_count())
+print("Merge Mismatches        :", get_merge_mismatch_count())
+
+
+print("\nEnrollment Master Columns")
+print("=" * 80)
+
+for c in df.columns:
+    print(c)
+
+print(get_discharge_master_df().columns.tolist())
+
+
+print("\n" + "=" * 80)
+print("DELETED RECORDS")
+print("=" * 80)
+
+datasets = {
+    "Eligibility": get_eligibility_df(),
+    "Mother": load_all_data()["mother"],
+    "Daily": load_all_data()["daily"],
+    "Discharge": get_discharge_df(),
+}
+
+for name, df in datasets.items():
+
+    deleted_col = [c for c in df.columns if c == "deleted"]
+
+    if not deleted_col:
+        continue
+
+    print(f"\n{name}")
+
+    print(df["deleted"].value_counts(dropna=False))
+
+    deleted = df[df["deleted"] == 1]
+
+    print(f"Deleted Records : {len(deleted)}")
+
+    if len(deleted):
+
+        cols = []
+
+        for c in [
+            "recordid",
+            "scr_babyid",
+            "enr_babyid",
+            "dmf_babyid",
+            "dis_babyid",
+            "deletedreason",
+        ]:
+            if c in deleted.columns:
+                cols.append(c)
+
+        print(deleted[cols])

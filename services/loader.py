@@ -30,8 +30,10 @@ def load_all_data():
     data = {}
 
     for key, filename in FILES.items():
-        data[key] = pd.DataFrame(load_json(filename))
-
+        df = pd.DataFrame(load_json(filename))
+        if "deleted" in df.columns:
+            df = df[df["deleted"].fillna(0) != 1]
+            data[key] = df
     return data
 
 
