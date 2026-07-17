@@ -1,3 +1,14 @@
+/* Improve readability of captions in light & dark mode */
+
+[data-testid="stCaptionContainer"] {
+    color: var(--text-color) !important;
+    opacity: 0.82;
+}
+
+[data-testid="stCaptionContainer"] p {
+    color: inherit !important;
+}
+
 /* Secondary text */
 [data-testid="stCaption"] {
     color: var(--text-color);
@@ -12,4 +23,15 @@
 /* Labels */
 label {
     color: var(--text-color);
+}
+
+/* Make captions more readable */
+
+[data-testid="stCaptionContainer"] {
+    opacity: 1 !important;
+}
+
+[data-testid="stCaptionContainer"] p {
+    color: var(--text-color) !important;
+    opacity: 0.78 !important;
 }
