@@ -88,7 +88,12 @@ def load_all_data():
 
 def get_last_sync():
     data = load_all_data()
-    return data["_last_sync"]
+    latest_date = pd.to_datetime(
+        data["eligibility"]["scr_dof"],
+        errors="coerce"
+    ).max()
+
+    return latest_date
 
 # ==========================================================
 # DEBUG
