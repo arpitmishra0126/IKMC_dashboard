@@ -48,21 +48,32 @@ def load_json_data():
 # API LOADER 
 # ==========================================================
 
-from datetime import datetime
-
 @st.cache_data
 def load_api_data():
-    """
-    Load all datasets from the backend API.
-    """
+
+    print("Loading eligibility...")
+    eligibility = api_service.get_eligibility_data()
+    print("✓ eligibility loaded")
+
+    print("Loading mother...")
+    mother = api_service.get_mother_data()
+    print("✓ mother loaded")
+
+    print("Loading daily...")
+    daily = api_service.get_daily_data()
+    print("✓ daily loaded")
+
+    print("Loading discharge...")
+    discharge = api_service.get_discharge_data()
+    print("✓ discharge loaded")
 
     sync_time = datetime.now()
 
     return {
-        "eligibility": api_service.get_eligibility_data(),
-        "mother": api_service.get_mother_data(),
-        "daily": api_service.get_daily_data(),
-        "discharge": api_service.get_discharge_data(),
+        "eligibility": eligibility,
+        "mother": mother,
+        "daily": daily,
+        "discharge": discharge,
         "_last_sync": sync_time,
     }
 # ==========================================================
