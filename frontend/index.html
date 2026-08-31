@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IKMC Dashboard</title>
+    <script>
+      // Applies the saved/default theme before first paint to avoid a
+      // flash of the wrong theme. Mirrors src/hooks/useTheme.tsx: dark is
+      // the default on first visit (not prefers-color-scheme); an explicit
+      // stored choice overrides it.
+      (function () {
+        try {
+          var stored = window.localStorage.getItem("ikmc-theme");
+          var theme = stored === "light" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
