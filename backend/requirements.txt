@@ -1,0 +1,17 @@
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+pydantic==2.13.4
+
+# Required transitively to import the existing repo-root `services` package
+# (services/indicators.py, services/loader.py, services/api_service.py,
+# services/config.py) unmodified - see app/services/indicators_bridge.py.
+streamlit==1.57.0
+pandas==3.0.3
+numpy
+requests
+python-dotenv
+
+# Test-only, but listed here so `pip install -r requirements.txt` is
+# sufficient to run backend/tests (fastapi.testclient.TestClient needs it).
+httpx
+pytest
