@@ -60,10 +60,3 @@ def indicators(use_local_json_fixtures):
 def loader_module(use_local_json_fixtures):
     import services.loader as loader
     return loader
-
-
-@pytest.fixture(scope="session")
-def app_source():
-    """Raw source text of app.py, used only to detect the hardcoded
-    attachment-time literals so a silent edit to them is caught."""
-    return (ROOT / "app.py").read_text(encoding="utf-8")

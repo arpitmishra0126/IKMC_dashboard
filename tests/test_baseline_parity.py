@@ -135,45 +135,19 @@ def test_last_sync_matches_baseline(loader_module, baseline):
 
 
 # --------------------------------------------------------------------------
-# Hardcoded values in app.py (NOT computed by indicators.py)
+# Historical hardcoded attachment values (formerly displayed by the now-
+# removed Streamlit app.py, NOT computed by indicators.py)
 # --------------------------------------------------------------------------
-
-@pytest.mark.parametrize(
-    "needle",
-    [
-        '"1h 45m"',   # TOTAL INBORN CASES -> attachment_nvd
-        '"2h 10m"',   # TOTAL INBORN CASES -> attachment_csection
-        '"1h 55m"',   # TOTAL OUTBORN CASES -> attachment_nvd
-        '"3h 45m"',   # TOTAL OUTBORN CASES -> attachment_csection
-    ],
-)
-def test_known_hardcoded_attachment_literals_still_present(needle, app_source):
-    """
-    app.py currently displays LITERAL hardcoded attachment-time strings on
-    the cohort summary cards instead of the real computed values returned by
-    get_inborn_nvd_attachment_hours() etc. (see app.py comment: "Keep these
-    until we improve the calculation").
-
-    This test is a deliberate tripwire, not a validation of correct
-    behavior: if it starts failing, someone changed/removed a hardcoded
-    literal, which is exactly the kind of silent drift this baseline suite
-    exists to catch before the FastAPI/React port either faithfully
-    reproduces or intentionally replaces this behavior.
-    """
-    assert needle in app_source, (
-        f"Expected hardcoded literal {needle} not found in app.py - "
-        "hardcoded attachment values may have changed. Update this test "
-        "and the migration plan's list of hardcoded values accordingly."
-    )
-
 
 def test_real_computed_attachment_values_differ_from_hardcoded_display(indicators):
     """
-    Documents (does not "fix") the gap between what app.py *displays* for
-    inborn/outborn attachment age and what the real indicator functions
-    compute from data. Useful evidence when deciding, during the FastAPI
-    port, whether to keep the hardcoded placeholder or switch to the
-    computed value - that decision belongs to stakeholders, not this suite.
+    Historical: the now-removed Streamlit UI (app.py) used to display
+    LITERAL hardcoded attachment-time strings on its cohort summary cards
+    instead of these real computed values. That app.py comparison is gone
+    along with app.py itself; this test now only confirms the indicator
+    functions still return numeric attachment-hour values, preserving the
+    historical hardcoded figures below as a record of what the legacy UI
+    used to show for comparison.
     """
     computed_inborn_nvd = indicators.get_inborn_nvd_attachment_hours()
     computed_inborn_csection = indicators.get_inborn_csection_attachment_hours()
@@ -199,13 +173,14 @@ def test_real_computed_attachment_values_differ_from_hardcoded_display(indicator
 
 def test_indicator_functions_accept_no_filter_arguments(indicators):
     """
-    components/filters.py renders Facility/Site/From-Date/To-Date controls
-    on every page and returns a dict, but that dict is never passed into any
-    indicator function - none of them accept parameters. This test asserts
-    that fact so it stays visible and testable: if someone starts adding a
-    `facility=` / `from_date=` parameter to an indicator function without
-    updating the caller, this test will start failing and needs a conscious
-    decision, not a silent partial wiring.
+    The now-removed Streamlit UI's components/filters.py used to render
+    Facility/Site/From-Date/To-Date controls on every page, but that dict
+    was never passed into any indicator function - none of them accept
+    parameters. This test preserves that fact as a tripwire for the
+    FastAPI/React port: if someone starts adding a `facility=` /
+    `from_date=` parameter to an indicator function without updating the
+    caller, this test will start failing and needs a conscious decision,
+    not a silent partial wiring.
     """
     import inspect
 
