@@ -1,0 +1,199 @@
+{
+  "dataframe_indicators": {
+    "get_duplicate_babyid_df": {
+      "columns": [
+        "scr_babyid",
+        "recordid",
+        "scr_research_id",
+        "site_id",
+        "facility_id"
+      ],
+      "content_hash": "541c5205426da989e368fbee39f6168d51cbee56866d56bff3d8c31dae2a1deb",
+      "shape": [
+        2,
+        5
+      ]
+    },
+    "get_duplicate_discharge_df": {
+      "columns": [
+        "scr_babyid",
+        "recordid_x",
+        "dis_dof",
+        "dis_inf_outcome",
+        "scr_research_id",
+        "site_id_y",
+        "facility_id_y",
+        "Duplicate Records"
+      ],
+      "content_hash": "af5ae3809be85df15d25622b4ce17c40e531e3f0426cdbb21aed0fae5cf63226",
+      "shape": [
+        6,
+        8
+      ]
+    },
+    "get_merge_mismatch_df": {
+      "columns": [
+        "recordid",
+        "scr_research_id",
+        "scr_babyid",
+        "site_id",
+        "facility_id"
+      ],
+      "content_hash": "340b778bcf6d9ee55ee196b9318fd2c47b3bb942114b358ab4eb9bbf39e46c31",
+      "shape": [
+        0,
+        5
+      ]
+    },
+    "get_missing_babyid_df": {
+      "columns": [
+        "recordid",
+        "scr_research_id",
+        "scr_babyid",
+        "site_id",
+        "facility_id"
+      ],
+      "content_hash": "dffe1b8e91791e4d5dbdf094329783523be0fa50bcafab7efb737a1c572fc30c",
+      "shape": [
+        2283,
+        5
+      ]
+    },
+    "get_missing_dailycare_df": {
+      "columns": [
+        "recordid",
+        "scr_research_id",
+        "scr_babyid",
+        "site_id",
+        "facility_id"
+      ],
+      "content_hash": "0f844f860aa14b48f97ef3dc789ced6a2775dedf3520bc9bfe571dc4d4b81a22",
+      "shape": [
+        1,
+        5
+      ]
+    }
+  },
+  "hardcoded_values": {
+    "app.py::cohort_summary(TOTAL INBORN CASES).attachment_csection": "2h 10m",
+    "app.py::cohort_summary(TOTAL INBORN CASES).attachment_nvd": "1h 45m",
+    "app.py::cohort_summary(TOTAL OUTBORN CASES).attachment_csection": "3h 45m",
+    "app.py::cohort_summary(TOTAL OUTBORN CASES).attachment_nvd": "1h 55m"
+  },
+  "meta": {
+    "captured_at": "2026-08-31T09:20:28.626272",
+    "data_source_used": "json (local fixtures: data/raw/*.json)",
+    "note": "Production DATA_SOURCE in services/config.py is 'api'. This baseline uses the local JSON fixtures for determinism; values will differ from a live-API run if upstream data has changed since data/raw/*.json was last refreshed.",
+    "source_module": "services.indicators"
+  },
+  "scalar_indicators": {
+    "get_avg_kmc_hours": 3.3,
+    "get_avg_kmc_minutes": 195.8,
+    "get_duplicate_babyid_count": 1,
+    "get_duplicate_discharge_count": 2,
+    "get_inborn_count": 354,
+    "get_inborn_csection_attachment_hours": 1.3,
+    "get_inborn_csection_avg_kmc": 2.1,
+    "get_inborn_csection_bf_count": 16,
+    "get_inborn_csection_count": 194,
+    "get_inborn_csection_death": 0,
+    "get_inborn_csection_discharged": 168,
+    "get_inborn_csection_lama": 0,
+    "get_inborn_csection_referred": 2,
+    "get_inborn_csection_ssc_under_2h_count": 9,
+    "get_inborn_nvd_attachment_hours": 3.0,
+    "get_inborn_nvd_avg_kmc": 3.1,
+    "get_inborn_nvd_bf_count": 35,
+    "get_inborn_nvd_count": 163,
+    "get_inborn_nvd_death": 2,
+    "get_inborn_nvd_discharged": 130,
+    "get_inborn_nvd_lama": 8,
+    "get_inborn_nvd_referred": 11,
+    "get_inborn_nvd_ssc_under_2h_count": 18,
+    "get_merge_mismatch_count": 0,
+    "get_missing_babyid_count": 2283,
+    "get_missing_dailycare_count": 1,
+    "get_missing_outcome_count": 0,
+    "get_msncu_avg_kmc": 4.0,
+    "get_msncu_count": 164,
+    "get_msncu_csection_achieved_count": 4,
+    "get_msncu_csection_attachment_hours": 0,
+    "get_msncu_csection_avg_kmc": 4.0,
+    "get_msncu_csection_bf_count": 12,
+    "get_msncu_csection_count": 27,
+    "get_msncu_csection_coverage": 14.8,
+    "get_msncu_csection_ssc_count": 12,
+    "get_msncu_csection_ssc_under_2h_count": 9,
+    "get_msncu_nvd_achieved_count": 4,
+    "get_msncu_nvd_attachment_hours": 3.0,
+    "get_msncu_nvd_avg_kmc": 4.0,
+    "get_msncu_nvd_bf_count": 26,
+    "get_msncu_nvd_count": 54,
+    "get_msncu_nvd_coverage": 7.4,
+    "get_msncu_nvd_ssc_count": 30,
+    "get_msncu_nvd_ssc_under_2h_count": 15,
+    "get_msncu_total_cases": 80,
+    "get_outborn_avg_kmc": 5.8,
+    "get_outborn_count": 81,
+    "get_outborn_csection_achieved_count": 0,
+    "get_outborn_csection_attachment_hours": 0,
+    "get_outborn_csection_avg_kmc": 4.7,
+    "get_outborn_csection_bf_count": 3,
+    "get_outborn_csection_count": 7,
+    "get_outborn_csection_coverage": 0.0,
+    "get_outborn_csection_death": 0,
+    "get_outborn_csection_discharged": 5,
+    "get_outborn_csection_lama": 1,
+    "get_outborn_csection_referred": 0,
+    "get_outborn_csection_ssc_under_2h_count": 1,
+    "get_outborn_nvd_achieved_count": 0,
+    "get_outborn_nvd_attachment_hours": 1.4,
+    "get_outborn_nvd_avg_kmc": 6.0,
+    "get_outborn_nvd_bf_count": 11,
+    "get_outborn_nvd_count": 75,
+    "get_outborn_nvd_coverage": 0.0,
+    "get_outborn_nvd_death": 2,
+    "get_outborn_nvd_discharged": 35,
+    "get_outborn_nvd_lama": 12,
+    "get_outborn_nvd_referred": 17,
+    "get_outborn_nvd_ssc_under_2h_count": 3,
+    "get_outborn_total_cases": 81,
+    "get_pnc_avg_kmc": 2.0,
+    "get_pnc_count": 412,
+    "get_pnc_csection_achieved_count": 0,
+    "get_pnc_csection_attachment_hours": 1.3,
+    "get_pnc_csection_avg_kmc": 1.8,
+    "get_pnc_csection_bf_count": 4,
+    "get_pnc_csection_count": 167,
+    "get_pnc_csection_coverage": 0.0,
+    "get_pnc_csection_ssc_count": 0,
+    "get_pnc_csection_ssc_under_2h_count": 0,
+    "get_pnc_nvd_achieved_count": 0,
+    "get_pnc_nvd_attachment_hours": 0.0,
+    "get_pnc_nvd_avg_kmc": 2.5,
+    "get_pnc_nvd_bf_count": 9,
+    "get_pnc_nvd_count": 109,
+    "get_pnc_nvd_coverage": 0.0,
+    "get_pnc_nvd_ssc_count": 4,
+    "get_pnc_nvd_ssc_under_2h_count": 3,
+    "get_pnc_total_cases": 274,
+    "get_ssc_percentage": 26.6,
+    "get_total_alive_babies": 629,
+    "get_total_consented": 434,
+    "get_total_death": 4,
+    "get_total_discharged": 337,
+    "get_total_eligible": 576,
+    "get_total_enrolled": 173,
+    "get_total_lama": 21,
+    "get_total_referred": 31,
+    "get_total_screened": 627,
+    "get_total_screening_records": 2717,
+    "get_total_ssc_not_received": 127,
+    "get_total_ssc_received": 46,
+    "get_total_still_admitted": 40,
+    "get_validation_status": "\ud83d\udfe1 Review Required"
+  },
+  "sync_metadata": {
+    "get_last_sync": "2026-05-27T00:00:00"
+  }
+}
