@@ -83,12 +83,28 @@ def test_meta_sync_schema(client):
 
 def test_overview_schema(client):
     body = client.get("/api/dashboard/overview").json()
-    assert set(body.keys()) == {
+    int_keys = {
         "pre_screened", "screened", "eligible_for_enrollment",
         "discharged", "referred", "lama", "death",
     }
-    for key in body:
+    assert set(body.keys()) == int_keys | {"period_start", "period_end", "total_cases_summary"}
+    for key in int_keys:
         assert isinstance(body[key], int)
+
+    assert isinstance(body["period_start"], str)
+    assert isinstance(body["period_end"], str)
+
+    summary = body["total_cases_summary"]
+    assert set(summary.keys()) == {
+        "total_cases", "delivery", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment_hours",
+    }
+    assert isinstance(summary["total_cases"], int)
+    for split_key in ("delivery", "ssc_under_2h", "exclusive_bf"):
+        assert set(summary[split_key].keys()) == {"nvd", "csection"}
+        assert isinstance(summary[split_key]["nvd"], int)
+    for split_key in ("avg_kmc", "attachment_hours"):
+        assert set(summary[split_key].keys()) == {"nvd", "csection"}
+        assert isinstance(summary[split_key]["nvd"], (int, float))
 
 
 def test_cohorts_schema(client):
