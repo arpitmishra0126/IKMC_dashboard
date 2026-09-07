@@ -2,8 +2,8 @@
   "dataframe_indicators": {
     "get_duplicate_babyid_df": {
       "columns": [
-        "scr_babyid",
         "recordid",
+        "scr_babyid",
         "scr_research_id",
         "site_id",
         "facility_id"
@@ -16,8 +16,8 @@
     },
     "get_duplicate_discharge_df": {
       "columns": [
-        "scr_babyid",
         "recordid_x",
+        "scr_babyid",
         "dis_dof",
         "dis_inf_outcome",
         "scr_research_id",
@@ -81,7 +81,7 @@
     "app.py::cohort_summary(TOTAL OUTBORN CASES).attachment_nvd": "1h 55m"
   },
   "meta": {
-    "captured_at": "2026-08-31T09:20:28.626272",
+    "captured_at": "2026-09-07T10:11:15.471755",
     "data_source_used": "json (local fixtures: data/raw/*.json)",
     "note": "Production DATA_SOURCE in services/config.py is 'api'. This baseline uses the local JSON fixtures for determinism; values will differ from a live-API run if upstream data has changed since data/raw/*.json was last refreshed.",
     "source_module": "services.indicators"

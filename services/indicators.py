@@ -1461,8 +1461,8 @@ def get_duplicate_babyid_df():
         df["scr_babyid"].isin(dup_ids)
     ][
         [
-            "scr_babyid",
             "recordid",
+            "scr_babyid",
             "scr_research_id",
             "site_id",
             "facility_id"
@@ -1482,8 +1482,8 @@ def get_duplicate_discharge_df():
 
     return result[
         [
-            "scr_babyid",
             "recordid_x",
+            "scr_babyid",
             "dis_dof",
             "dis_inf_outcome",
             "scr_research_id",
@@ -1491,7 +1491,7 @@ def get_duplicate_discharge_df():
             "facility_id_y",
             "Duplicate Records",
         ]
-    ].sort_values("scr_babyid")  
+    ].sort_values("scr_babyid")
 
 def get_missing_dailycare_df():
     screening = get_eligibility_df()
