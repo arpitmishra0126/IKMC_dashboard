@@ -1409,8 +1409,6 @@ def get_merge_mismatch_count():
 # VALIDATION STATUS
 # ==================================================
 
-st.caption("Quality indicators highlighting potential data completeness and integrity issues.")
-
 def get_validation_status():
 
     duplicate_discharge = get_duplicate_discharge_count()

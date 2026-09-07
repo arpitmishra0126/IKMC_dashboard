@@ -1,9 +1,4 @@
 streamlit
 pandas
 numpy
-plotly
-openpyxl
-xlsxwriter
-pyarrow
-mysql-connector-python
 python-dotenv
