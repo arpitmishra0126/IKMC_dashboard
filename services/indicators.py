@@ -581,6 +581,92 @@ def get_inborn_csection_attachment_hours():
     return round(sum(values) / len(values), 1)
 
 # ==================================================
+# ATTACHMENT AGE - MINUTES + CASE COUNT
+# ==================================================
+# New, additive companion functions - the existing get_*_attachment_hours()
+# functions above are NOT modified, so every existing caller is unaffected.
+# "Achieving attachment" = enr_bf_bentfed_hw_dt is non-null (same existing
+# definition the hours functions already filter on - no new/clinical
+# threshold introduced). Minutes are computed directly from the raw
+# datetime difference (seconds / 60) and rounded once at the end, not
+# derived from the already-rounded hours value, so precision isn't lost.
+
+def _attachment_stats(df):
+    """Shared by every get_*_attachment_stats() function below. Mirrors
+    the exact same filter/parse steps as get_*_attachment_hours(), just
+    also returning the case count and using minutes instead of hours."""
+
+    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
+    case_count = len(df)
+
+    if case_count == 0:
+        return 0, 0
+
+    birth_dt = pd.to_datetime(df["scr_dob"].astype(str) + " " + df["scr_tob"].astype(str), errors="coerce")
+    attach_dt = pd.to_datetime(
+        df["enr_bf_bentfed_hw_dt"].astype(str) + " " + df["enr_bf_bentfed_hw_tm"].astype(str),
+        errors="coerce",
+    )
+    minutes = (attach_dt - birth_dt).dt.total_seconds() / 60
+    minutes = minutes.dropna()
+
+    mean_minutes = round(minutes.mean(), 1) if len(minutes) > 0 else 0
+
+    return case_count, mean_minutes
+
+
+def get_msncu_nvd_attachment_stats():
+    return _attachment_stats(get_msncu_nvd_enrollment_df())
+
+
+def get_msncu_csection_attachment_stats():
+    return _attachment_stats(get_msncu_csection_enrollment_df())
+
+
+def get_pnc_nvd_attachment_stats():
+    return _attachment_stats(get_pnc_nvd_enrollment_df())
+
+
+def get_pnc_csection_attachment_stats():
+    return _attachment_stats(get_pnc_csection_enrollment_df())
+
+
+def get_outborn_nvd_attachment_stats():
+    return _attachment_stats(get_outborn_nvd_df())
+
+
+def get_outborn_csection_attachment_stats():
+    return _attachment_stats(get_outborn_csection_df())
+
+
+def get_inborn_nvd_attachment_stats():
+    msncu_count, msncu_minutes = get_msncu_nvd_attachment_stats()
+    pnc_count, pnc_minutes = get_pnc_nvd_attachment_stats()
+
+    total_count = msncu_count + pnc_count
+
+    # Mirrors get_inborn_nvd_attachment_hours()'s own combination pattern
+    # exactly (mean of each group's mean, excluding values <= 0).
+    values = [msncu_minutes, pnc_minutes]
+    values = [v for v in values if v > 0]
+    mean_minutes = round(sum(values) / len(values), 1) if values else 0
+
+    return total_count, mean_minutes
+
+
+def get_inborn_csection_attachment_stats():
+    msncu_count, msncu_minutes = get_msncu_csection_attachment_stats()
+    pnc_count, pnc_minutes = get_pnc_csection_attachment_stats()
+
+    total_count = msncu_count + pnc_count
+
+    values = [msncu_minutes, pnc_minutes]
+    values = [v for v in values if v > 0]
+    mean_minutes = round(sum(values) / len(values), 1) if values else 0
+
+    return total_count, mean_minutes
+
+# ==================================================
 # SSC WITHIN 2 HOURS
 # ==================================================
 

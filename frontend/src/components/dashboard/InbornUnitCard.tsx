@@ -45,13 +45,13 @@ export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornU
     },
     {
       label: "Attachment age",
-      nvd: `${unit.attachment_hours.nvd} hrs`,
-      csection: `${unit.attachment_hours.csection} hrs`,
+      nvd: `${unit.attachment.nvd.minutes} min · ${formatNumber(unit.attachment.nvd.case_count)} cases`,
+      csection: `${unit.attachment.csection.minutes} min · ${formatNumber(unit.attachment.csection.case_count)} cases`,
     },
     {
       label: "iKMC coverage",
-      nvd: `${unit.coverage.nvd.percentage}%`,
-      csection: `${unit.coverage.csection.percentage}%`,
+      nvd: `${unit.coverage.nvd.percentage}% (${formatNumber(unit.coverage.nvd.achieved_count)}/${formatNumber(unit.delivery.nvd)})`,
+      csection: `${unit.coverage.csection.percentage}% (${formatNumber(unit.coverage.csection.achieved_count)}/${formatNumber(unit.delivery.csection)})`,
     },
     {
       label: "Achieved count",

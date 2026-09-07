@@ -1,4 +1,4 @@
-import type { CoverageSplit, DeliverySplitFloat, DeliverySplitInt } from "@/types/common"
+import type { AttachmentStatSplit, CoverageSplit, DeliverySplitFloat, DeliverySplitInt } from "@/types/common"
 
 /**
  * Mirrors backend/app/schemas/inborn.py exactly (field names verified
@@ -18,7 +18,7 @@ export interface InbornUnitDetail {
   ssc_under_2h: DeliverySplitInt
   avg_kmc_by_delivery: DeliverySplitFloat
   exclusive_bf: DeliverySplitInt
-  attachment_hours: DeliverySplitFloat
+  attachment: AttachmentStatSplit
   coverage: CoverageSplit
   nvd_definition_note: string
 }

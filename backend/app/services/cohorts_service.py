@@ -2,27 +2,17 @@
 Backs GET /api/dashboard/cohorts - the TOTAL INBORN CASES / TOTAL OUTBORN
 CASES cohort_summary() cards from app.py.
 
-Per docs/MIGRATION_DECISIONS.md #3: app.py currently displays four
-hardcoded attachment-time strings on these cards instead of the values
-computed by get_*_attachment_hours(). This module reproduces that same
-hardcoded display value (so the API faithfully mirrors current production
-behavior) while ALSO surfacing the real computed value alongside it and an
-explicit `is_hardcoded` flag - so the frontend/consumers can see the
-discrepancy instead of it being silently hidden. No value is changed or
-"fixed" here; both are exposed and the API makes clear which is which.
+Attachment age now shows the actual computed value (minutes + case count)
+via get_{prefix}_{nvd,csection}_attachment_stats() - the hardcoded
+"1h 45m"-style display strings previously shown alongside it have been
+removed per explicit instruction; nothing hardcoded is displayed here
+anymore.
 """
 from __future__ import annotations
 
 from typing import Any
 
 from app.services.indicators_bridge import indicators, to_native
-
-# Exact literal strings currently hardcoded in app.py (TOTAL INBORN CASES /
-# TOTAL OUTBORN CASES cards). See docs/MIGRATION_DECISIONS.md #3.
-_HARDCODED_ATTACHMENT = {
-    "inborn": {"nvd": "1h 45m", "csection": "2h 10m"},
-    "outborn": {"nvd": "1h 55m", "csection": "3h 45m"},
-}
 
 
 def _cohort_card(prefix: str) -> dict[str, Any]:
@@ -37,8 +27,11 @@ def _cohort_card(prefix: str) -> dict[str, Any]:
     kmc_csection_fn = getattr(indicators, f"get_{prefix}_csection_avg_kmc")
     bf_nvd_fn = getattr(indicators, f"get_{prefix}_nvd_bf_count")
     bf_csection_fn = getattr(indicators, f"get_{prefix}_csection_bf_count")
-    attach_nvd_fn = getattr(indicators, f"get_{prefix}_nvd_attachment_hours")
-    attach_csection_fn = getattr(indicators, f"get_{prefix}_csection_attachment_hours")
+    attach_nvd_stats_fn = getattr(indicators, f"get_{prefix}_nvd_attachment_stats")
+    attach_csection_stats_fn = getattr(indicators, f"get_{prefix}_csection_attachment_stats")
+
+    nvd_case_count, nvd_minutes = attach_nvd_stats_fn()
+    csection_case_count, csection_minutes = attach_csection_stats_fn()
 
     return {
         "total_cases": to_native(total_cases_fn()),
@@ -59,11 +52,8 @@ def _cohort_card(prefix: str) -> dict[str, Any]:
             "csection": to_native(bf_csection_fn()),
         },
         "attachment": {
-            "displayed_nvd": _HARDCODED_ATTACHMENT[prefix]["nvd"],
-            "displayed_csection": _HARDCODED_ATTACHMENT[prefix]["csection"],
-            "is_hardcoded": True,
-            "computed_nvd_hours": to_native(attach_nvd_fn()),
-            "computed_csection_hours": to_native(attach_csection_fn()),
+            "nvd": {"minutes": to_native(nvd_minutes), "case_count": to_native(nvd_case_count)},
+            "csection": {"minutes": to_native(csection_minutes), "case_count": to_native(csection_case_count)},
         },
     }
 

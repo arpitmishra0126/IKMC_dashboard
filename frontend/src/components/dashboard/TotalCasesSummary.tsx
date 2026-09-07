@@ -44,8 +44,8 @@ export function TotalCasesSummary({ summary }: TotalCasesSummaryProps) {
     },
     {
       label: "Attachment age",
-      nvd: `${summary.attachment_hours.nvd} hrs`,
-      csection: `${summary.attachment_hours.csection} hrs`,
+      nvd: `${summary.attachment.nvd.minutes} min · ${formatNumber(summary.attachment.nvd.case_count)} cases`,
+      csection: `${summary.attachment.csection.minutes} min · ${formatNumber(summary.attachment.csection.case_count)} cases`,
     },
   ]
 

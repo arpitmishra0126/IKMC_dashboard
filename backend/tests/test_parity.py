@@ -55,8 +55,10 @@ def _cohort_map(prefix: str) -> dict:
         "avg_kmc.csection": f"get_{prefix}_csection_avg_kmc",
         "exclusive_bf.nvd": f"get_{prefix}_nvd_bf_count",
         "exclusive_bf.csection": f"get_{prefix}_csection_bf_count",
-        "attachment.computed_nvd_hours": f"get_{prefix}_nvd_attachment_hours",
-        "attachment.computed_csection_hours": f"get_{prefix}_csection_attachment_hours",
+        # attachment is now {minutes, case_count} (see services.indicators
+        # get_*_attachment_stats()) rather than the hours value baselined
+        # here, so it is verified separately, not via this hours-baseline
+        # parity map.
     }
 
 
@@ -78,8 +80,7 @@ def _inborn_unit_map(prefix: str) -> dict:
         "avg_kmc_by_delivery.csection": f"get_{prefix}_csection_avg_kmc",
         "exclusive_bf.nvd": f"get_{prefix}_nvd_bf_count",
         "exclusive_bf.csection": f"get_{prefix}_csection_bf_count",
-        "attachment_hours.nvd": f"get_{prefix}_nvd_attachment_hours",
-        "attachment_hours.csection": f"get_{prefix}_csection_attachment_hours",
+        # attachment is now {minutes, case_count}, verified separately.
         "coverage.nvd.percentage": f"get_{prefix}_nvd_coverage",
         "coverage.nvd.achieved_count": f"get_{prefix}_nvd_achieved_count",
         "coverage.csection.percentage": f"get_{prefix}_csection_coverage",
@@ -100,7 +101,7 @@ def _outborn_unit_map(prefix: str) -> dict:
         "ssc_under_2h": f"get_{prefix}_ssc_under_2h_count",
         "avg_kmc": f"get_{prefix}_avg_kmc",
         "exclusive_bf": f"get_{prefix}_bf_count",
-        "attachment_hours": f"get_{prefix}_attachment_hours",
+        # attachment is now {minutes, case_count}, verified separately.
     }
 
 
@@ -279,3 +280,66 @@ def test_sync_metadata_parity(client, baseline):
     assert body["latest_screening_date"] == baseline["sync_metadata"]["get_last_sync"], (
         "GET /api/meta/sync::latest_screening_date vs get_last_sync()"
     )
+
+
+# --------------------------------------------------------------------------
+# attachment {minutes, case_count} parity - not in baseline_snapshot.json
+# (which predates these functions), so compared directly against
+# services.indicators.get_*_attachment_stats() instead.
+# --------------------------------------------------------------------------
+
+ATTACHMENT_STATS_MAP = {
+    ("cohorts", "inborn", "nvd"): "get_inborn_nvd_attachment_stats",
+    ("cohorts", "inborn", "csection"): "get_inborn_csection_attachment_stats",
+    ("cohorts", "outborn", "nvd"): "get_outborn_nvd_attachment_stats",
+    ("cohorts", "outborn", "csection"): "get_outborn_csection_attachment_stats",
+}
+
+
+@pytest.mark.parametrize("path,fn_name", ATTACHMENT_STATS_MAP.items())
+def test_cohorts_attachment_stats_parity(client, path, fn_name):
+    import services.indicators as indicators
+
+    endpoint, cohort, split = path
+    body = client.get(f"/api/dashboard/{endpoint}").json()
+    case_count, minutes = getattr(indicators, fn_name)()
+
+    assert body[cohort]["attachment"][split]["case_count"] == case_count
+    assert body[cohort]["attachment"][split]["minutes"] == pytest.approx(minutes)
+
+
+@pytest.mark.parametrize(
+    "prefix,fn_name",
+    [
+        ("msncu_nvd", "get_msncu_nvd_attachment_stats"),
+        ("msncu_csection", "get_msncu_csection_attachment_stats"),
+        ("pnc_nvd", "get_pnc_nvd_attachment_stats"),
+        ("pnc_csection", "get_pnc_csection_attachment_stats"),
+    ],
+)
+def test_inborn_attachment_stats_parity(client, prefix, fn_name):
+    import services.indicators as indicators
+
+    unit, split = prefix.split("_", 1)
+    body = client.get("/api/dashboard/inborn").json()
+    case_count, minutes = getattr(indicators, fn_name)()
+
+    assert body[unit]["attachment"][split]["case_count"] == case_count
+    assert body[unit]["attachment"][split]["minutes"] == pytest.approx(minutes)
+
+
+@pytest.mark.parametrize(
+    "split,fn_name",
+    [
+        ("nvd", "get_outborn_nvd_attachment_stats"),
+        ("csection", "get_outborn_csection_attachment_stats"),
+    ],
+)
+def test_outborn_attachment_stats_parity(client, split, fn_name):
+    import services.indicators as indicators
+
+    body = client.get("/api/dashboard/outborn").json()
+    case_count, minutes = getattr(indicators, fn_name)()
+
+    assert body[split]["attachment"]["case_count"] == case_count
+    assert body[split]["attachment"]["minutes"] == pytest.approx(minutes)

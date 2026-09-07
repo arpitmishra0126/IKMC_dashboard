@@ -1,4 +1,4 @@
-import type { DeliverySplitFloat, DeliverySplitInt } from "@/types/common"
+import type { AttachmentStatSplit, DeliverySplitFloat, DeliverySplitInt } from "@/types/common"
 
 /**
  * Period-aware Total Cases summary (senior feedback), combined across
@@ -16,7 +16,7 @@ export interface TotalCasesSummary {
   ssc_under_2h: DeliverySplitInt
   avg_kmc: DeliverySplitFloat
   exclusive_bf: DeliverySplitInt
-  attachment_hours: DeliverySplitFloat
+  attachment: AttachmentStatSplit
 }
 
 /** Mirrors backend/app/schemas/overview.py. */

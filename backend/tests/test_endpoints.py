@@ -96,15 +96,19 @@ def test_overview_schema(client):
 
     summary = body["total_cases_summary"]
     assert set(summary.keys()) == {
-        "total_cases", "delivery", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment_hours",
+        "total_cases", "delivery", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment",
     }
     assert isinstance(summary["total_cases"], int)
     for split_key in ("delivery", "ssc_under_2h", "exclusive_bf"):
         assert set(summary[split_key].keys()) == {"nvd", "csection"}
         assert isinstance(summary[split_key]["nvd"], int)
-    for split_key in ("avg_kmc", "attachment_hours"):
-        assert set(summary[split_key].keys()) == {"nvd", "csection"}
-        assert isinstance(summary[split_key]["nvd"], (int, float))
+    assert set(summary["avg_kmc"].keys()) == {"nvd", "csection"}
+    assert isinstance(summary["avg_kmc"]["nvd"], (int, float))
+    assert set(summary["attachment"].keys()) == {"nvd", "csection"}
+    for split_key in ("nvd", "csection"):
+        assert set(summary["attachment"][split_key].keys()) == {"minutes", "case_count"}
+        assert isinstance(summary["attachment"][split_key]["minutes"], (int, float))
+        assert isinstance(summary["attachment"][split_key]["case_count"], int)
 
 
 def test_cohorts_schema(client):
@@ -116,11 +120,11 @@ def test_cohorts_schema(client):
             "total_cases", "delivery", "ssc_under_2h", "avg_kmc",
             "exclusive_bf", "attachment",
         }
-        assert set(card["attachment"].keys()) == {
-            "displayed_nvd", "displayed_csection", "is_hardcoded",
-            "computed_nvd_hours", "computed_csection_hours",
-        }
-        assert card["attachment"]["is_hardcoded"] is True
+        assert set(card["attachment"].keys()) == {"nvd", "csection"}
+        for split_key in ("nvd", "csection"):
+            assert set(card["attachment"][split_key].keys()) == {"minutes", "case_count"}
+            assert isinstance(card["attachment"][split_key]["minutes"], (int, float))
+            assert isinstance(card["attachment"][split_key]["case_count"], int)
 
 
 def test_data_quality_schema(client):
@@ -139,11 +143,14 @@ def test_inborn_schema(client):
         detail = body[unit]
         assert set(detail.keys()) == {
             "avg_kmc", "total_cases", "delivery", "ssc_under_2h",
-            "avg_kmc_by_delivery", "exclusive_bf", "attachment_hours",
+            "avg_kmc_by_delivery", "exclusive_bf", "attachment",
             "coverage", "nvd_definition_note",
         }
         assert set(detail["coverage"].keys()) == {"nvd", "csection"}
         assert set(detail["coverage"]["nvd"].keys()) == {"percentage", "achieved_count"}
+        assert set(detail["attachment"].keys()) == {"nvd", "csection"}
+        for split_key in ("nvd", "csection"):
+            assert set(detail["attachment"][split_key].keys()) == {"minutes", "case_count"}
 
 
 def test_outborn_schema(client):
@@ -153,8 +160,9 @@ def test_outborn_schema(client):
     }
     for unit in ("nvd", "csection"):
         assert set(body[unit].keys()) == {
-            "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment_hours",
+            "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment",
         }
+        assert set(body[unit]["attachment"].keys()) == {"minutes", "case_count"}
 
 
 def test_discharge_schema(client):

@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.schemas.common import DeliverySplitFloat, DeliverySplitInt
+from app.schemas.common import AttachmentStatSplit, DeliverySplitFloat, DeliverySplitInt
 
 
 class TotalCasesSummary(BaseModel):
@@ -17,7 +17,7 @@ class TotalCasesSummary(BaseModel):
     ssc_under_2h: DeliverySplitInt
     avg_kmc: DeliverySplitFloat
     exclusive_bf: DeliverySplitInt
-    attachment_hours: DeliverySplitFloat
+    attachment: AttachmentStatSplit
 
 
 class OverviewResponse(BaseModel):

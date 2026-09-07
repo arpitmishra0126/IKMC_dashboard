@@ -72,21 +72,24 @@ def _avg_kmc_hours(df: pd.DataFrame) -> float:
     return round(avg_minutes / 60, 1)
 
 
-def _attachment_hours(df: pd.DataFrame) -> float:
-    """Mirrors get_*_attachment_hours(): birth_dt vs.
-    enr_bf_bentfed_hw_dt/tm, seconds/3600, round 1, 0 if empty."""
+def _attachment_stats(df: pd.DataFrame) -> tuple[int, float]:
+    """Mirrors services.indicators._attachment_stats(): case_count = rows
+    where enr_bf_bentfed_hw_dt is non-null (existing definition, unchanged);
+    minutes computed directly from the raw datetime difference (seconds /
+    60) and rounded once at the end, not derived from an already-rounded
+    hours value."""
     df = df[df["enr_bf_bentfed_hw_dt"].notna()]
-    if len(df) == 0:
-        return 0.0
+    case_count = len(df)
+    if case_count == 0:
+        return 0, 0.0
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str) + " " + df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(
         df["enr_bf_bentfed_hw_dt"].astype(str) + " " + df["enr_bf_bentfed_hw_tm"].astype(str),
         errors="coerce",
     )
-    hours = ((attach_dt - birth_dt).dt.total_seconds() / 3600).dropna()
-    if len(hours) == 0:
-        return 0.0
-    return round(hours.mean(), 1)
+    minutes = ((attach_dt - birth_dt).dt.total_seconds() / 60).dropna()
+    mean_minutes = round(minutes.mean(), 1) if len(minutes) > 0 else 0.0
+    return case_count, mean_minutes
 
 
 def _ssc_under_2h_count(enrollment_slice: pd.DataFrame) -> int:
@@ -147,9 +150,9 @@ class _Group:
         matched = df[df["enr_bf_bentfed"] == 11]
         return int(len(matched)) if self._bf_row_count else int(matched["dmf_babyid"].nunique())
 
-    def attachment_hours(self, section: str) -> float:
+    def attachment_stats(self, section: str) -> tuple[int, float]:
         df = self.bf_attachment_nvd if section == "nvd" else self.bf_attachment_csection
-        return _attachment_hours(df)
+        return _attachment_stats(df)
 
 
 def get_overview_total_cases(start=None, end=None) -> dict:
@@ -204,10 +207,16 @@ def get_overview_total_cases(start=None, end=None) -> dict:
         rows = pd.concat([g.avg_kmc_rows(section) for g in groups], ignore_index=True)
         return _avg_kmc_hours(rows)
 
-    def mean_of_group_attachment(section: str) -> float:
-        values = [g.attachment_hours(section) for g in groups]
-        values = [v for v in values if v > 0]
-        return round(sum(values) / len(values), 1) if values else 0.0
+    def combined_attachment(section: str) -> dict:
+        stats = [g.attachment_stats(section) for g in groups]
+        total_count = sum(count for count, _ in stats)
+        # Mirrors get_inborn_nvd_attachment_hours()'s own combination
+        # pattern exactly (mean of each group's own mean, excluding
+        # values <= 0), generalized from 2 groups (MSNCU+PNC) to 3
+        # (MSNCU+PNC+Outborn).
+        minute_values = [minutes for _, minutes in stats if minutes > 0]
+        mean_minutes = round(sum(minute_values) / len(minute_values), 1) if minute_values else 0.0
+        return {"minutes": mean_minutes, "case_count": total_count}
 
     return {
         "total_cases": total_cases,
@@ -227,8 +236,8 @@ def get_overview_total_cases(start=None, end=None) -> dict:
             "nvd": summed("bf_count", "nvd"),
             "csection": summed("bf_count", "csection"),
         },
-        "attachment_hours": {
-            "nvd": mean_of_group_attachment("nvd"),
-            "csection": mean_of_group_attachment("csection"),
+        "attachment": {
+            "nvd": combined_attachment("nvd"),
+            "csection": combined_attachment("csection"),
         },
     }

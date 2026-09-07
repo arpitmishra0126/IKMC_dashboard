@@ -104,9 +104,9 @@ def get_overview(period: Optional[str] = None) -> dict[str, Any]:
                 "csection": to_native(total_cases_summary["avg_kmc"]["csection"]),
             },
             "exclusive_bf": total_cases_summary["exclusive_bf"],
-            "attachment_hours": {
-                "nvd": to_native(total_cases_summary["attachment_hours"]["nvd"]),
-                "csection": to_native(total_cases_summary["attachment_hours"]["csection"]),
+            "attachment": {
+                "nvd": total_cases_summary["attachment"]["nvd"],
+                "csection": total_cases_summary["attachment"]["csection"],
             },
         },
     }

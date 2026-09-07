@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.common import CoverageSplit, DeliverySplitFloat, DeliverySplitInt
+from app.schemas.common import AttachmentStatSplit, CoverageSplit, DeliverySplitFloat, DeliverySplitInt
 
 
 class InbornUnitDetail(BaseModel):
@@ -10,7 +10,7 @@ class InbornUnitDetail(BaseModel):
     ssc_under_2h: DeliverySplitInt
     avg_kmc_by_delivery: DeliverySplitFloat
     exclusive_bf: DeliverySplitInt
-    attachment_hours: DeliverySplitFloat
+    attachment: AttachmentStatSplit
     coverage: CoverageSplit
     nvd_definition_note: str
 

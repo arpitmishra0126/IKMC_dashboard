@@ -32,3 +32,18 @@ class DischargeOutcome(BaseModel):
 class DischargeBreakdown(BaseModel):
     nvd: DischargeOutcome
     csection: DischargeOutcome
+
+
+class AttachmentStat(BaseModel):
+    """Attachment age in MINUTES (computed directly from the raw datetime
+    difference before rounding - not derived from an already-rounded hours
+    value), plus the number of cases with a recorded attachment timestamp
+    (enr_bf_bentfed_hw_dt non-null - the existing definition, unchanged)."""
+
+    minutes: float
+    case_count: int
+
+
+class AttachmentStatSplit(BaseModel):
+    nvd: AttachmentStat
+    csection: AttachmentStat

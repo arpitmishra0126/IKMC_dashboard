@@ -35,3 +35,13 @@ export interface DischargeBreakdown {
   nvd: DischargeOutcome
   csection: DischargeOutcome
 }
+
+export interface AttachmentStat {
+  minutes: number
+  case_count: number
+}
+
+export interface AttachmentStatSplit {
+  nvd: AttachmentStat
+  csection: AttachmentStat
+}

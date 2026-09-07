@@ -48,10 +48,8 @@ const METRIC_ROWS: Array<{
 /**
  * Reproduces components/cohort_summary.py as an NVD vs. C-Section
  * comparison table (total cases + delivery/SSC/KMC/BF rows), plus an
- * attachment subsection that clearly separates the value app.py currently
- * hardcodes (`displayed_*`) from the real computed value
- * (`computed_*_hours`) - see docs/MIGRATION_DECISIONS.md #3. Neither value
- * is altered or silently swapped for the other.
+ * attachment subsection showing the real computed attachment age (minutes)
+ * and the number of cases with a recorded attachment timestamp.
  */
 export function CohortSummaryCard({ title, cohort, accent, icon: Icon }: CohortSummaryCardProps) {
   const styles = COHORT_ACCENT_STYLES[accent]
@@ -98,29 +96,25 @@ function AttachmentSummary({
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <div className="mb-1 flex items-center gap-1.5">
+          <div className="mb-1">
             <Badge variant="outline" className={badgeClassName}>
-              Displayed
+              NVD
             </Badge>
-            {cohort.attachment.is_hardcoded ? (
-              <span className="text-muted-foreground text-[11px] italic">static placeholder</span>
-            ) : null}
           </div>
           <p className="text-sm">
-            NVD: <span className="font-medium">{cohort.attachment.displayed_nvd}</span> · C-Section:{" "}
-            <span className="font-medium">{cohort.attachment.displayed_csection}</span>
+            <span className="font-medium">{cohort.attachment.nvd.minutes} min</span> ·{" "}
+            {formatNumber(cohort.attachment.nvd.case_count)} cases
           </p>
         </div>
         <div>
           <div className="mb-1">
             <Badge variant="outline" className={badgeClassName}>
-              Computed from data
+              C-Section
             </Badge>
           </div>
           <p className="text-sm">
-            NVD: <span className="font-medium">{cohort.attachment.computed_nvd_hours} hrs</span> ·
-            C-Section:{" "}
-            <span className="font-medium">{cohort.attachment.computed_csection_hours} hrs</span>
+            <span className="font-medium">{cohort.attachment.csection.minutes} min</span> ·{" "}
+            {formatNumber(cohort.attachment.csection.case_count)} cases
           </p>
         </div>
       </div>
