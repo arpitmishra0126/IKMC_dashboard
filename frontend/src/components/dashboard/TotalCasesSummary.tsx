@@ -1,18 +1,14 @@
 import { Users } from "lucide-react"
 
+import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
-import type { AttachmentStat } from "@/types/common"
 import type { TotalCasesSummary as TotalCasesSummaryData } from "@/types/overview"
 
 interface TotalCasesSummaryProps {
   summary: TotalCasesSummaryData
-}
-
-function formatAttachment(stat: AttachmentStat): string {
-  return `Min ${stat.min_minutes} · Avg ${stat.minutes} · Max ${stat.max_minutes} min · ${formatNumber(stat.case_count)} cases`
 }
 
 /**
@@ -49,8 +45,8 @@ export function TotalCasesSummary({ summary }: TotalCasesSummaryProps) {
     },
     {
       label: "Attachment age",
-      nvd: formatAttachment(summary.attachment.nvd),
-      csection: formatAttachment(summary.attachment.csection),
+      nvd: <AttachmentAgeStat stat={summary.attachment.nvd} />,
+      csection: <AttachmentAgeStat stat={summary.attachment.csection} />,
     },
   ]
 

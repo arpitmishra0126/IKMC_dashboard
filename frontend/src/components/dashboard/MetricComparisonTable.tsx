@@ -1,7 +1,9 @@
+import type { ReactNode } from "react"
+
 export interface MetricComparisonRow {
   label: string
-  nvd: string
-  csection: string
+  nvd: ReactNode
+  csection: ReactNode
 }
 
 interface MetricComparisonTableProps {

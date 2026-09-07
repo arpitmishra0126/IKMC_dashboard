@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 
+import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type CohortAccent, COHORT_ACCENT_STYLES } from "@/lib/cohortAccent"
@@ -29,10 +30,6 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
     { label: "SSC < 2h", value: formatNumber(unit.ssc_under_2h) },
     { label: "Avg KMC", value: `${unit.avg_kmc} hrs/day` },
     { label: "Exclusive BF", value: formatNumber(unit.exclusive_bf) },
-    { label: "Attachment min", value: `${unit.attachment.min_minutes} min` },
-    { label: "Attachment avg", value: `${unit.attachment.minutes} min` },
-    { label: "Attachment max", value: `${unit.attachment.max_minutes} min` },
-    { label: "Attachment cases", value: formatNumber(unit.attachment.case_count) },
   ]
 
   return (
@@ -45,7 +42,7 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {metrics.map((metric) => (
             <div key={metric.label}>
@@ -56,6 +53,10 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
             </div>
           ))}
         </dl>
+        <div className="bg-muted/40 rounded-md border p-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide">Attachment age</p>
+          <AttachmentAgeStat stat={unit.attachment} />
+        </div>
       </CardContent>
     </Card>
   )

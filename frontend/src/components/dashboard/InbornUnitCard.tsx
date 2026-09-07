@@ -1,10 +1,10 @@
 import type { LucideIcon } from "lucide-react"
 
+import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
-import type { AttachmentStat } from "@/types/common"
 import type { InbornUnitDetail } from "@/types/inborn"
 
 interface InbornUnitCardProps {
@@ -12,10 +12,6 @@ interface InbornUnitCardProps {
   description: string
   unit: InbornUnitDetail
   icon: LucideIcon
-}
-
-function formatAttachment(stat: AttachmentStat): string {
-  return `Min ${stat.min_minutes} · Avg ${stat.minutes} · Max ${stat.max_minutes} min · ${formatNumber(stat.case_count)} cases`
 }
 
 /**
@@ -50,8 +46,8 @@ export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornU
     },
     {
       label: "Attachment age",
-      nvd: formatAttachment(unit.attachment.nvd),
-      csection: formatAttachment(unit.attachment.csection),
+      nvd: <AttachmentAgeStat stat={unit.attachment.nvd} />,
+      csection: <AttachmentAgeStat stat={unit.attachment.csection} />,
     },
     {
       label: "iKMC coverage",

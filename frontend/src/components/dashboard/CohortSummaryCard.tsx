@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import { Info } from "lucide-react"
 
+import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -101,7 +102,7 @@ function AttachmentSummary({
               NVD
             </Badge>
           </div>
-          <AttachmentMinAvgMax stat={cohort.attachment.nvd} />
+          <AttachmentAgeStat stat={cohort.attachment.nvd} />
         </div>
         <div>
           <div className="mb-1">
@@ -109,22 +110,10 @@ function AttachmentSummary({
               C-Section
             </Badge>
           </div>
-          <AttachmentMinAvgMax stat={cohort.attachment.csection} />
+          <AttachmentAgeStat stat={cohort.attachment.csection} />
         </div>
       </div>
     </div>
-  )
-}
-
-function AttachmentMinAvgMax({ stat }: { stat: CohortCard["attachment"]["nvd"] }) {
-  return (
-    <p className="text-sm leading-tight">
-      Min <span className="font-medium">{stat.min_minutes} min</span> · Avg{" "}
-      <span className="font-medium">{stat.minutes} min</span> · Max{" "}
-      <span className="font-medium">{stat.max_minutes} min</span>
-      <br />
-      <span className="text-muted-foreground">{formatNumber(stat.case_count)} cases</span>
-    </p>
   )
 }
 
