@@ -1,50 +1,65 @@
-import { ArrowRightLeft, HeartCrack, LogOut, UserX } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
+import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type CohortAccent, COHORT_ACCENT_STYLES } from "@/lib/cohortAccent"
 import { formatNumber } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import type { DischargeOutcome } from "@/types/common"
+import type { DischargeBreakdown } from "@/types/common"
 
 interface DischargeOutcomeCardProps {
   title: string
-  outcome: DischargeOutcome
+  breakdown: DischargeBreakdown
   accent: CohortAccent
+  icon: LucideIcon
 }
 
-const OUTCOME_META = [
-  { key: "discharged", label: "Discharged", icon: LogOut },
-  { key: "referred", label: "Referred", icon: ArrowRightLeft },
-  { key: "lama", label: "LAMA", icon: UserX },
-  { key: "death", label: "Death", icon: HeartCrack },
-] as const
-
 /**
- * Reproduces one NVD/C-Section outcome block of pages/6_Discharge.py
- * (discharged / referred / LAMA / death), reused for both Inborn and
- * Outborn sections.
+ * One cohort's discharge outcomes (Inborn or Outborn) as a single card,
+ * with NVD vs C-Section shown as directly comparable table rows - reuses
+ * the same MetricComparisonTable and cohort accent styling as the
+ * Overview's CohortSummaryCard, so this page shares its visual system
+ * instead of inventing a parallel one.
  */
-export function DischargeOutcomeCard({ title, outcome, accent }: DischargeOutcomeCardProps) {
+export function DischargeOutcomeCard({ title, breakdown, accent, icon: Icon }: DischargeOutcomeCardProps) {
   const styles = COHORT_ACCENT_STYLES[accent]
+
+  const rows = [
+    {
+      label: "Discharged",
+      nvd: formatNumber(breakdown.nvd.discharged),
+      csection: formatNumber(breakdown.csection.discharged),
+    },
+    {
+      label: "Referred",
+      nvd: formatNumber(breakdown.nvd.referred),
+      csection: formatNumber(breakdown.csection.referred),
+    },
+    {
+      label: "LAMA",
+      nvd: formatNumber(breakdown.nvd.lama),
+      csection: formatNumber(breakdown.csection.lama),
+    },
+    {
+      label: "Death",
+      nvd: formatNumber(breakdown.nvd.death),
+      csection: formatNumber(breakdown.csection.death),
+    },
+  ]
 
   return (
     <Card className={cn("border-l-4", styles.border)}>
       <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <span className={cn("bg-muted rounded-md p-1.5", styles.icon)}>
+            <Icon className="size-4" aria-hidden="true" />
+          </span>
+          {title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {OUTCOME_META.map(({ key, label, icon: Icon }) => (
-            <div key={key} className="flex flex-col gap-1">
-              <dt className="text-muted-foreground flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide">
-                <Icon className="size-3.5" aria-hidden="true" />
-                {label}
-              </dt>
-              <dd className="text-xl font-bold tabular-nums">{formatNumber(outcome[key])}</dd>
-            </div>
-          ))}
-        </dl>
+        <MetricComparisonTable rows={rows} />
       </CardContent>
     </Card>
   )
@@ -58,11 +73,7 @@ export function DischargeOutcomeCardSkeleton({ title, accent }: { title: string;
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={`discharge-outcome-skeleton-${index}`} className="h-10 w-14" />
-          ))}
-        </div>
+        <Skeleton className="h-40 w-full" />
       </CardContent>
     </Card>
   )
