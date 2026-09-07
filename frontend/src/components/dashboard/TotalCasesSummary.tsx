@@ -4,10 +4,15 @@ import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTa
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
+import type { AttachmentStat } from "@/types/common"
 import type { TotalCasesSummary as TotalCasesSummaryData } from "@/types/overview"
 
 interface TotalCasesSummaryProps {
   summary: TotalCasesSummaryData
+}
+
+function formatAttachment(stat: AttachmentStat): string {
+  return `Min ${stat.min_minutes} · Avg ${stat.minutes} · Max ${stat.max_minutes} min · ${formatNumber(stat.case_count)} cases`
 }
 
 /**
@@ -44,8 +49,8 @@ export function TotalCasesSummary({ summary }: TotalCasesSummaryProps) {
     },
     {
       label: "Attachment age",
-      nvd: `${summary.attachment.nvd.minutes} min · ${formatNumber(summary.attachment.nvd.case_count)} cases`,
-      csection: `${summary.attachment.csection.minutes} min · ${formatNumber(summary.attachment.csection.case_count)} cases`,
+      nvd: formatAttachment(summary.attachment.nvd),
+      csection: formatAttachment(summary.attachment.csection),
     },
   ]
 

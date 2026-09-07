@@ -29,7 +29,9 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
     { label: "SSC < 2h", value: formatNumber(unit.ssc_under_2h) },
     { label: "Avg KMC", value: `${unit.avg_kmc} hrs/day` },
     { label: "Exclusive BF", value: formatNumber(unit.exclusive_bf) },
-    { label: "Attachment age", value: `${unit.attachment.minutes} min` },
+    { label: "Attachment min", value: `${unit.attachment.min_minutes} min` },
+    { label: "Attachment avg", value: `${unit.attachment.minutes} min` },
+    { label: "Attachment max", value: `${unit.attachment.max_minutes} min` },
     { label: "Attachment cases", value: formatNumber(unit.attachment.case_count) },
   ]
 

@@ -4,6 +4,7 @@ import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTa
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
+import type { AttachmentStat } from "@/types/common"
 import type { InbornUnitDetail } from "@/types/inborn"
 
 interface InbornUnitCardProps {
@@ -11,6 +12,10 @@ interface InbornUnitCardProps {
   description: string
   unit: InbornUnitDetail
   icon: LucideIcon
+}
+
+function formatAttachment(stat: AttachmentStat): string {
+  return `Min ${stat.min_minutes} · Avg ${stat.minutes} · Max ${stat.max_minutes} min · ${formatNumber(stat.case_count)} cases`
 }
 
 /**
@@ -45,8 +50,8 @@ export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornU
     },
     {
       label: "Attachment age",
-      nvd: `${unit.attachment.nvd.minutes} min · ${formatNumber(unit.attachment.nvd.case_count)} cases`,
-      csection: `${unit.attachment.csection.minutes} min · ${formatNumber(unit.attachment.csection.case_count)} cases`,
+      nvd: formatAttachment(unit.attachment.nvd),
+      csection: formatAttachment(unit.attachment.csection),
     },
     {
       label: "iKMC coverage",

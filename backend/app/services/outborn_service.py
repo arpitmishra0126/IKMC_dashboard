@@ -24,14 +24,19 @@ _OUTBORN_DEFINITION_NOTE = (
 
 def _delivery_unit(prefix: str) -> dict[str, Any]:
     """prefix is 'outborn_nvd' or 'outborn_csection'."""
-    case_count, minutes = getattr(indicators, f"get_{prefix}_attachment_stats")()
+    case_count, minutes, min_minutes, max_minutes = getattr(indicators, f"get_{prefix}_attachment_stats")()
 
     return {
         "case_count": to_native(getattr(indicators, f"get_{prefix}_count")()),
         "ssc_under_2h": to_native(getattr(indicators, f"get_{prefix}_ssc_under_2h_count")()),
         "avg_kmc": to_native(getattr(indicators, f"get_{prefix}_avg_kmc")()),
         "exclusive_bf": to_native(getattr(indicators, f"get_{prefix}_bf_count")()),
-        "attachment": {"minutes": to_native(minutes), "case_count": to_native(case_count)},
+        "attachment": {
+            "minutes": to_native(minutes),
+            "min_minutes": to_native(min_minutes),
+            "max_minutes": to_native(max_minutes),
+            "case_count": to_native(case_count),
+        },
     }
 
 

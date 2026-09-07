@@ -302,10 +302,13 @@ def test_cohorts_attachment_stats_parity(client, path, fn_name):
 
     endpoint, cohort, split = path
     body = client.get(f"/api/dashboard/{endpoint}").json()
-    case_count, minutes = getattr(indicators, fn_name)()
+    case_count, minutes, min_minutes, max_minutes = getattr(indicators, fn_name)()
 
-    assert body[cohort]["attachment"][split]["case_count"] == case_count
-    assert body[cohort]["attachment"][split]["minutes"] == pytest.approx(minutes)
+    stat = body[cohort]["attachment"][split]
+    assert stat["case_count"] == case_count
+    assert stat["minutes"] == pytest.approx(minutes)
+    assert stat["min_minutes"] == pytest.approx(min_minutes)
+    assert stat["max_minutes"] == pytest.approx(max_minutes)
 
 
 @pytest.mark.parametrize(
@@ -322,10 +325,13 @@ def test_inborn_attachment_stats_parity(client, prefix, fn_name):
 
     unit, split = prefix.split("_", 1)
     body = client.get("/api/dashboard/inborn").json()
-    case_count, minutes = getattr(indicators, fn_name)()
+    case_count, minutes, min_minutes, max_minutes = getattr(indicators, fn_name)()
 
-    assert body[unit]["attachment"][split]["case_count"] == case_count
-    assert body[unit]["attachment"][split]["minutes"] == pytest.approx(minutes)
+    stat = body[unit]["attachment"][split]
+    assert stat["case_count"] == case_count
+    assert stat["minutes"] == pytest.approx(minutes)
+    assert stat["min_minutes"] == pytest.approx(min_minutes)
+    assert stat["max_minutes"] == pytest.approx(max_minutes)
 
 
 @pytest.mark.parametrize(
@@ -339,7 +345,10 @@ def test_outborn_attachment_stats_parity(client, split, fn_name):
     import services.indicators as indicators
 
     body = client.get("/api/dashboard/outborn").json()
-    case_count, minutes = getattr(indicators, fn_name)()
+    case_count, minutes, min_minutes, max_minutes = getattr(indicators, fn_name)()
 
-    assert body[split]["attachment"]["case_count"] == case_count
-    assert body[split]["attachment"]["minutes"] == pytest.approx(minutes)
+    stat = body[split]["attachment"]
+    assert stat["case_count"] == case_count
+    assert stat["minutes"] == pytest.approx(minutes)
+    assert stat["min_minutes"] == pytest.approx(min_minutes)
+    assert stat["max_minutes"] == pytest.approx(max_minutes)

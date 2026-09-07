@@ -581,7 +581,7 @@ def get_inborn_csection_attachment_hours():
     return round(sum(values) / len(values), 1)
 
 # ==================================================
-# ATTACHMENT AGE - MINUTES + CASE COUNT
+# ATTACHMENT AGE - MIN/AVG/MAX MINUTES + CASE COUNT
 # ==================================================
 # New, additive companion functions - the existing get_*_attachment_hours()
 # functions above are NOT modified, so every existing caller is unaffected.
@@ -594,13 +594,14 @@ def get_inborn_csection_attachment_hours():
 def _attachment_stats(df):
     """Shared by every get_*_attachment_stats() function below. Mirrors
     the exact same filter/parse steps as get_*_attachment_hours(), just
-    also returning the case count and using minutes instead of hours."""
+    also returning the case count, min, and max, using minutes instead
+    of hours. Returns (case_count, mean_minutes, min_minutes, max_minutes)."""
 
     df = df[df["enr_bf_bentfed_hw_dt"].notna()]
     case_count = len(df)
 
     if case_count == 0:
-        return 0, 0
+        return 0, 0, 0, 0
 
     birth_dt = pd.to_datetime(df["scr_dob"].astype(str) + " " + df["scr_tob"].astype(str), errors="coerce")
     attach_dt = pd.to_datetime(
@@ -610,9 +611,14 @@ def _attachment_stats(df):
     minutes = (attach_dt - birth_dt).dt.total_seconds() / 60
     minutes = minutes.dropna()
 
-    mean_minutes = round(minutes.mean(), 1) if len(minutes) > 0 else 0
+    if len(minutes) == 0:
+        return case_count, 0, 0, 0
 
-    return case_count, mean_minutes
+    mean_minutes = round(minutes.mean(), 1)
+    min_minutes = round(minutes.min(), 1)
+    max_minutes = round(minutes.max(), 1)
+
+    return case_count, mean_minutes, min_minutes, max_minutes
 
 
 def get_msncu_nvd_attachment_stats():
@@ -639,32 +645,32 @@ def get_outborn_csection_attachment_stats():
     return _attachment_stats(get_outborn_csection_df())
 
 
+def _combine_attachment_stats(*group_stats):
+    """Combines 2+ (case_count, mean_minutes, min_minutes, max_minutes)
+    tuples into one. case_count is summed. mean_minutes mirrors
+    get_inborn_*_attachment_hours()'s own combination pattern exactly
+    (mean of each group's own mean, excluding values <= 0). min/max are
+    the true min/max across the same underlying per-group min/max values
+    (only groups with at least one case contribute)."""
+    total_count = sum(count for count, _, _, _ in group_stats)
+
+    means = [mean for _, mean, _, _ in group_stats if mean > 0]
+    mean_minutes = round(sum(means) / len(means), 1) if means else 0
+
+    mins = [mn for count, _, mn, _ in group_stats if count > 0]
+    maxes = [mx for count, _, _, mx in group_stats if count > 0]
+    min_minutes = min(mins) if mins else 0
+    max_minutes = max(maxes) if maxes else 0
+
+    return total_count, mean_minutes, min_minutes, max_minutes
+
+
 def get_inborn_nvd_attachment_stats():
-    msncu_count, msncu_minutes = get_msncu_nvd_attachment_stats()
-    pnc_count, pnc_minutes = get_pnc_nvd_attachment_stats()
-
-    total_count = msncu_count + pnc_count
-
-    # Mirrors get_inborn_nvd_attachment_hours()'s own combination pattern
-    # exactly (mean of each group's mean, excluding values <= 0).
-    values = [msncu_minutes, pnc_minutes]
-    values = [v for v in values if v > 0]
-    mean_minutes = round(sum(values) / len(values), 1) if values else 0
-
-    return total_count, mean_minutes
+    return _combine_attachment_stats(get_msncu_nvd_attachment_stats(), get_pnc_nvd_attachment_stats())
 
 
 def get_inborn_csection_attachment_stats():
-    msncu_count, msncu_minutes = get_msncu_csection_attachment_stats()
-    pnc_count, pnc_minutes = get_pnc_csection_attachment_stats()
-
-    total_count = msncu_count + pnc_count
-
-    values = [msncu_minutes, pnc_minutes]
-    values = [v for v in values if v > 0]
-    mean_minutes = round(sum(values) / len(values), 1) if values else 0
-
-    return total_count, mean_minutes
+    return _combine_attachment_stats(get_msncu_csection_attachment_stats(), get_pnc_csection_attachment_stats())
 
 # ==================================================
 # SSC WITHIN 2 HOURS

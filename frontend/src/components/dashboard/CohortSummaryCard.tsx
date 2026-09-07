@@ -101,10 +101,7 @@ function AttachmentSummary({
               NVD
             </Badge>
           </div>
-          <p className="text-sm">
-            <span className="font-medium">{cohort.attachment.nvd.minutes} min</span> ·{" "}
-            {formatNumber(cohort.attachment.nvd.case_count)} cases
-          </p>
+          <AttachmentMinAvgMax stat={cohort.attachment.nvd} />
         </div>
         <div>
           <div className="mb-1">
@@ -112,13 +109,22 @@ function AttachmentSummary({
               C-Section
             </Badge>
           </div>
-          <p className="text-sm">
-            <span className="font-medium">{cohort.attachment.csection.minutes} min</span> ·{" "}
-            {formatNumber(cohort.attachment.csection.case_count)} cases
-          </p>
+          <AttachmentMinAvgMax stat={cohort.attachment.csection} />
         </div>
       </div>
     </div>
+  )
+}
+
+function AttachmentMinAvgMax({ stat }: { stat: CohortCard["attachment"]["nvd"] }) {
+  return (
+    <p className="text-sm leading-tight">
+      Min <span className="font-medium">{stat.min_minutes} min</span> · Avg{" "}
+      <span className="font-medium">{stat.minutes} min</span> · Max{" "}
+      <span className="font-medium">{stat.max_minutes} min</span>
+      <br />
+      <span className="text-muted-foreground">{formatNumber(stat.case_count)} cases</span>
+    </p>
   )
 }
 

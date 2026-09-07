@@ -106,7 +106,7 @@ def test_overview_schema(client):
     assert isinstance(summary["avg_kmc"]["nvd"], (int, float))
     assert set(summary["attachment"].keys()) == {"nvd", "csection"}
     for split_key in ("nvd", "csection"):
-        assert set(summary["attachment"][split_key].keys()) == {"minutes", "case_count"}
+        assert set(summary["attachment"][split_key].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
         assert isinstance(summary["attachment"][split_key]["minutes"], (int, float))
         assert isinstance(summary["attachment"][split_key]["case_count"], int)
 
@@ -122,7 +122,7 @@ def test_cohorts_schema(client):
         }
         assert set(card["attachment"].keys()) == {"nvd", "csection"}
         for split_key in ("nvd", "csection"):
-            assert set(card["attachment"][split_key].keys()) == {"minutes", "case_count"}
+            assert set(card["attachment"][split_key].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
             assert isinstance(card["attachment"][split_key]["minutes"], (int, float))
             assert isinstance(card["attachment"][split_key]["case_count"], int)
 
@@ -150,7 +150,7 @@ def test_inborn_schema(client):
         assert set(detail["coverage"]["nvd"].keys()) == {"percentage", "achieved_count"}
         assert set(detail["attachment"].keys()) == {"nvd", "csection"}
         for split_key in ("nvd", "csection"):
-            assert set(detail["attachment"][split_key].keys()) == {"minutes", "case_count"}
+            assert set(detail["attachment"][split_key].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
 
 
 def test_outborn_schema(client):
@@ -162,7 +162,7 @@ def test_outborn_schema(client):
         assert set(body[unit].keys()) == {
             "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment",
         }
-        assert set(body[unit]["attachment"].keys()) == {"minutes", "case_count"}
+        assert set(body[unit]["attachment"].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
 
 
 def test_discharge_schema(client):

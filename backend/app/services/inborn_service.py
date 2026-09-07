@@ -26,8 +26,10 @@ _NVD_DEFINITION_NOTE = (
 
 def _unit_detail(prefix: str) -> dict[str, Any]:
     """prefix is 'msncu' or 'pnc'."""
-    nvd_case_count, nvd_minutes = getattr(indicators, f"get_{prefix}_nvd_attachment_stats")()
-    csection_case_count, csection_minutes = getattr(indicators, f"get_{prefix}_csection_attachment_stats")()
+    nvd_case_count, nvd_minutes, nvd_min, nvd_max = getattr(indicators, f"get_{prefix}_nvd_attachment_stats")()
+    csection_case_count, csection_minutes, csection_min, csection_max = getattr(
+        indicators, f"get_{prefix}_csection_attachment_stats"
+    )()
 
     return {
         "avg_kmc": to_native(getattr(indicators, f"get_{prefix}_avg_kmc")()),
@@ -49,8 +51,18 @@ def _unit_detail(prefix: str) -> dict[str, Any]:
             "csection": to_native(getattr(indicators, f"get_{prefix}_csection_bf_count")()),
         },
         "attachment": {
-            "nvd": {"minutes": to_native(nvd_minutes), "case_count": to_native(nvd_case_count)},
-            "csection": {"minutes": to_native(csection_minutes), "case_count": to_native(csection_case_count)},
+            "nvd": {
+                "minutes": to_native(nvd_minutes),
+                "min_minutes": to_native(nvd_min),
+                "max_minutes": to_native(nvd_max),
+                "case_count": to_native(nvd_case_count),
+            },
+            "csection": {
+                "minutes": to_native(csection_minutes),
+                "min_minutes": to_native(csection_min),
+                "max_minutes": to_native(csection_max),
+                "case_count": to_native(csection_case_count),
+            },
         },
         "coverage": {
             "nvd": {

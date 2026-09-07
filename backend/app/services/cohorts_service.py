@@ -30,8 +30,8 @@ def _cohort_card(prefix: str) -> dict[str, Any]:
     attach_nvd_stats_fn = getattr(indicators, f"get_{prefix}_nvd_attachment_stats")
     attach_csection_stats_fn = getattr(indicators, f"get_{prefix}_csection_attachment_stats")
 
-    nvd_case_count, nvd_minutes = attach_nvd_stats_fn()
-    csection_case_count, csection_minutes = attach_csection_stats_fn()
+    nvd_case_count, nvd_minutes, nvd_min, nvd_max = attach_nvd_stats_fn()
+    csection_case_count, csection_minutes, csection_min, csection_max = attach_csection_stats_fn()
 
     return {
         "total_cases": to_native(total_cases_fn()),
@@ -52,8 +52,18 @@ def _cohort_card(prefix: str) -> dict[str, Any]:
             "csection": to_native(bf_csection_fn()),
         },
         "attachment": {
-            "nvd": {"minutes": to_native(nvd_minutes), "case_count": to_native(nvd_case_count)},
-            "csection": {"minutes": to_native(csection_minutes), "case_count": to_native(csection_case_count)},
+            "nvd": {
+                "minutes": to_native(nvd_minutes),
+                "min_minutes": to_native(nvd_min),
+                "max_minutes": to_native(nvd_max),
+                "case_count": to_native(nvd_case_count),
+            },
+            "csection": {
+                "minutes": to_native(csection_minutes),
+                "min_minutes": to_native(csection_min),
+                "max_minutes": to_native(csection_max),
+                "case_count": to_native(csection_case_count),
+            },
         },
     }
 

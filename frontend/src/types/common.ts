@@ -38,6 +38,8 @@ export interface DischargeBreakdown {
 
 export interface AttachmentStat {
   minutes: number
+  min_minutes: number
+  max_minutes: number
   case_count: number
 }
 

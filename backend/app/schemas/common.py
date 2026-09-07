@@ -37,10 +37,13 @@ class DischargeBreakdown(BaseModel):
 class AttachmentStat(BaseModel):
     """Attachment age in MINUTES (computed directly from the raw datetime
     difference before rounding - not derived from an already-rounded hours
-    value), plus the number of cases with a recorded attachment timestamp
-    (enr_bf_bentfed_hw_dt non-null - the existing definition, unchanged)."""
+    value): mean (`minutes`), `min_minutes`, `max_minutes`, plus the number
+    of cases with a recorded attachment timestamp (enr_bf_bentfed_hw_dt
+    non-null - the existing definition, unchanged)."""
 
     minutes: float
+    min_minutes: float
+    max_minutes: float
     case_count: int
 
 
