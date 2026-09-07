@@ -28,6 +28,10 @@ OVERVIEW_MAP = {
     "pre_screened": "get_total_screening_records",
     "screened": "get_total_screened",
     "eligible_for_enrollment": "get_total_eligible",
+    "discharged": "get_total_discharged",
+    "referred": "get_total_referred",
+    "lama": "get_total_lama",
+    "death": "get_total_death",
 }
 
 DATA_QUALITY_MAP = {

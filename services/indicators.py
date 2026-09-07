@@ -1001,20 +1001,36 @@ def get_outborn_csection_coverage():
 # DISCHARGE DATASET
 # ==================================================
 
-def get_discharge_df():
+def _filter_by_dis_outcome_date(df, start=None, end=None):
+    """
+    Optional dis_inf_dt_outcome (actual infant outcome date) range filter,
+    applied only when both bounds are given. Kept separate from
+    _filter_by_scr_dof (not shared/generalized) so the existing scr_dof-
+    based Overview KPI filter is untouched by this change. Every existing
+    zero-arg caller of get_discharge_df()/get_discharge_master_df() is
+    unaffected (start/end default to None, returning df unchanged).
+    """
+    if start is None or end is None:
+        return df
+
+    outcome_date = pd.to_datetime(df["dis_inf_dt_outcome"], errors="coerce")
+    return df[(outcome_date >= start) & (outcome_date <= end)]
+
+
+def get_discharge_df(start=None, end=None):
 
     data = load_all_data()
 
-    return data["discharge"]
+    return _filter_by_dis_outcome_date(data["discharge"], start, end)
 
 
 # ==================================================
 # DISCHARGE DATASETS
 # ==================================================
 
-def get_discharge_master_df():
+def get_discharge_master_df(start=None, end=None):
 
-    discharge = get_discharge_df()
+    discharge = get_discharge_df(start, end)
 
     eligibility = get_eligibility_df()
 
@@ -1072,9 +1088,9 @@ def get_outborn_csection_discharge_df():
 # OVERALL DISCHARGE OUTCOMES
 # ==================================================
 
-def get_total_discharged():
+def get_total_discharged(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return (
         df[
@@ -1084,9 +1100,9 @@ def get_total_discharged():
     )
 
 
-def get_total_referred():
+def get_total_referred(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return (
         df[
@@ -1096,9 +1112,9 @@ def get_total_referred():
     )
 
 
-def get_total_lama():
+def get_total_lama(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return (
         df[
@@ -1108,9 +1124,9 @@ def get_total_lama():
     )
 
 
-def get_total_death():
+def get_total_death(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return (
         df[

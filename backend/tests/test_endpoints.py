@@ -83,7 +83,10 @@ def test_meta_sync_schema(client):
 
 def test_overview_schema(client):
     body = client.get("/api/dashboard/overview").json()
-    assert set(body.keys()) == {"pre_screened", "screened", "eligible_for_enrollment"}
+    assert set(body.keys()) == {
+        "pre_screened", "screened", "eligible_for_enrollment",
+        "discharged", "referred", "lama", "death",
+    }
     for key in body:
         assert isinstance(body[key], int)
 
