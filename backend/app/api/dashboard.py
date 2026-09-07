@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from typing import Optional
+
+from fastapi import APIRouter, Query
 
 from app.schemas.cohorts import CohortsResponse
 from app.schemas.data_quality import DataQualityResponse
@@ -19,8 +21,10 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("/overview", response_model=OverviewResponse)
-def get_overview() -> OverviewResponse:
-    return OverviewResponse(**overview_service.get_overview())
+def get_overview(
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$")
+) -> OverviewResponse:
+    return OverviewResponse(**overview_service.get_overview(period))
 
 
 @router.get("/cohorts", response_model=CohortsResponse)

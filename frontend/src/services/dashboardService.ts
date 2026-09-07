@@ -12,7 +12,7 @@ import type { HealthResponse } from "@/types/health"
 import type { InbornResponse } from "@/types/inborn"
 import type { RefreshResponse, SyncMetadataResponse } from "@/types/meta"
 import type { OutbornResponse } from "@/types/outborn"
-import type { OverviewResponse } from "@/types/overview"
+import type { OverviewPeriod, OverviewResponse } from "@/types/overview"
 import type { ValidationDetailResponse } from "@/types/validation"
 
 export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
@@ -27,8 +27,12 @@ export function refreshData(signal?: AbortSignal): Promise<RefreshResponse> {
   return apiPost<RefreshResponse>("/api/meta/refresh", signal)
 }
 
-export function getOverview(signal?: AbortSignal): Promise<OverviewResponse> {
-  return apiGet<OverviewResponse>("/api/dashboard/overview", signal)
+export function getOverview(
+  period: OverviewPeriod = "all",
+  signal?: AbortSignal
+): Promise<OverviewResponse> {
+  const query = period === "all" ? "" : `?period=${period}`
+  return apiGet<OverviewResponse>(`/api/dashboard/overview${query}`, signal)
 }
 
 export function getCohorts(signal?: AbortSignal): Promise<CohortsResponse> {

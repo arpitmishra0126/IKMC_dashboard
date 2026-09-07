@@ -1,10 +1,13 @@
+import { useState } from "react"
 import { ClipboardList, Stethoscope, UserCheck } from "lucide-react"
 
 import { ErrorState } from "@/components/common/ErrorState"
 import { Section } from "@/components/layout/Section"
 import { useOverview } from "@/hooks/useOverview"
+import type { OverviewPeriod } from "@/types/overview"
 
 import { KpiCard, KpiCardSkeleton } from "./KpiCard"
+import { PeriodFilter } from "./PeriodFilter"
 
 const KPI_LABELS = ["PRE-SCREENED", "SCREENED", "ELIGIBLE FOR ENROLLMENT"] as const
 
@@ -13,12 +16,20 @@ const KPI_LABELS = ["PRE-SCREENED", "SCREENED", "ELIGIBLE FOR ENROLLMENT"] as co
  * PRE-SCREENED, SCREENED, ELIGIBLE FOR ENROLLMENT - backed by
  * GET /api/dashboard/overview. Icons are purely decorative/contextual and
  * do not add or infer any new metric.
+ *
+ * The period selector (PeriodFilter) only affects these 3 cards - Cohort
+ * Summary, Data Quality, and every other page are unaffected, since only
+ * this section's fetch passes a `period` to useOverview().
  */
 export function KpiSection() {
-  const { data, error, isInitialLoading, refetch } = useOverview()
+  const [period, setPeriod] = useState<OverviewPeriod>("all")
+  const { data, error, isInitialLoading, refetch } = useOverview(period)
 
   return (
-    <Section title="Key Performance Indicators (KPIs)">
+    <Section
+      title="Key Performance Indicators (KPIs)"
+      actions={<PeriodFilter value={period} onChange={setPeriod} />}
+    >
       {error ? (
         <ErrorState message={error.detail} onRetry={refetch} />
       ) : (

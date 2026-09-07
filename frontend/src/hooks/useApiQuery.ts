@@ -16,9 +16,16 @@ export interface UseApiQueryResult<T> {
  * small (no caching/retry library) since the initial React foundation only
  * needs loading / error / data states for a handful of read-only GET
  * endpoints.
+ *
+ * `deps` is optional and defaults to an empty array, so every existing
+ * caller (which doesn't pass it) keeps refetching only on `refetch()`,
+ * exactly as before. Passing a value here (e.g. a selected filter) makes
+ * the effect also refetch when that value changes - used by useOverview()
+ * for the period selector, without altering behavior for any other hook.
  */
 export function useApiQuery<T>(
-  queryFn: (signal: AbortSignal) => Promise<T>
+  queryFn: (signal: AbortSignal) => Promise<T>,
+  deps: unknown[] = []
 ): UseApiQueryResult<T> {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
@@ -50,7 +57,7 @@ export function useApiQuery<T>(
       })
 
     return () => controller.abort()
-  }, [refetchToken])
+  }, [refetchToken, ...deps])
 
   const refetch = useCallback(() => setRefetchToken((token) => token + 1), [])
 

@@ -3,41 +3,56 @@ from services.config import FIELD_MAP
 import pandas as pd
 import streamlit as st
 
-def get_eligibility_df():
+def _filter_by_scr_dof(df, start=None, end=None):
+    """
+    Optional scr_dof (screening date) range filter, applied only when both
+    bounds are given. Every existing zero-arg caller is unaffected (start
+    and end default to None, returning df unchanged) - this exists solely
+    to support the Overview KPI period selector; no calculation logic is
+    changed.
+    """
+    if start is None or end is None:
+        return df
+
+    dof = pd.to_datetime(df["scr_dof"], errors="coerce")
+    return df[(dof >= start) & (dof <= end)]
+
+
+def get_eligibility_df(start=None, end=None):
     data = load_all_data()
-    return data["eligibility"]
+    return _filter_by_scr_dof(data["eligibility"], start, end)
 
 # ==================================================
 # BASE DATASETS - DASHBOARD MEASURES
 # ==================================================
 
-def get_prescreened_df():
-    return get_eligibility_df().copy()
+def get_prescreened_df(start=None, end=None):
+    return get_eligibility_df(start, end).copy()
 
 
-def get_alive_df():
-    df = get_prescreened_df()
+def get_alive_df(start=None, end=None):
+    df = get_prescreened_df(start, end)
 
     return df[ df["scr_status_baby"] == 11]
 
-def get_preterm_lbw_df():
-    df = get_alive_df().copy()
+def get_preterm_lbw_df(start=None, end=None):
+    df = get_alive_df(start, end).copy()
 
     return df[
         ((df["scr_birthweight"] < 2500) | (df["scr_inf_ga_weeks"] < 37))
         ]
 
-def get_valid_admission_df():
-    df = get_preterm_lbw_df().copy()
+def get_valid_admission_df(start=None, end=None):
+    df = get_preterm_lbw_df(start, end).copy()
 
     return df[
-            ((df["scr_pob"] == 11)) | 
+            ((df["scr_pob"] == 11)) |
             ((df["scr_pob"].isin([12, 13, 14])) & (df["scr_baby_reach_24hrs"] == 11) )
              ]
 
 
-def get_eligible_df():
-    df = get_valid_admission_df().copy()
+def get_eligible_df(start=None, end=None):
+    df = get_valid_admission_df(start, end).copy()
     return df[df["scr_mconst_adm"] == 11]
 
 def get_consented_df():
@@ -55,20 +70,20 @@ def get_total_enrolled():
 # TOP KPI CARDS
 # ==================================================
 
-def get_total_screening_records():
-    return len(get_prescreened_df())
+def get_total_screening_records(start=None, end=None):
+    return len(get_prescreened_df(start, end))
 
 
 def get_total_alive_babies():
     return len(get_alive_df())
 
 
-def get_total_screened():
-    return len(get_preterm_lbw_df())
+def get_total_screened(start=None, end=None):
+    return len(get_preterm_lbw_df(start, end))
 
 
-def get_total_eligible():
-    return len(get_eligible_df())
+def get_total_eligible(start=None, end=None):
+    return len(get_eligible_df(start, end))
 
 
 def get_total_consented():
