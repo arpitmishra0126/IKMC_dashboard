@@ -23,7 +23,7 @@ export function AttachmentAgeStat({ stat }: { stat: AttachmentStat }) {
   ]
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="mx-auto flex w-fit flex-col gap-1">
       <div className="grid grid-cols-3 gap-1 text-center">
         {columns.map((col) => (
           <div key={col.label}>
