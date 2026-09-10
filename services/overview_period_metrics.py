@@ -72,22 +72,64 @@ def _avg_kmc_hours(df: pd.DataFrame) -> float:
     return round(avg_minutes / 60, 1)
 
 
-def _attachment_stats(df: pd.DataFrame) -> tuple[int, float, float, float]:
-    """Mirrors services.indicators._attachment_stats(): case_count = rows
-    where enr_bf_bentfed_hw_dt is non-null (existing definition, unchanged);
-    minutes computed directly from the raw datetime difference (seconds /
-    60) and rounded once at the end, not derived from an already-rounded
-    hours value. Returns (case_count, mean_minutes, min_minutes, max_minutes)."""
-    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
-    case_count = len(df)
+def _earliest_initiation_df(daily: pd.DataFrame) -> pd.DataFrame:
+    """Mirrors services.indicators.get_earliest_initiation_df(): one row
+    per baby (dmf_babyid) with the earliest qualifying DCT initiation
+    datetime (`_initiation_dt`) - confirmed official source (senior
+    sign-off) for Attachment Age / early initiation, replacing the old
+    mother.enr_bf_bentfed_hw_dt/tm field. A variable only qualifies where
+    its value is 11 ("Yes"); if both dmf_bf_bentfed_hw and dmf_exp_bmilk_hw
+    are Yes, the earlier of the two recorded date/times is used - achieved
+    by pooling every qualifying candidate per baby and taking the overall
+    minimum. "null" is a literal placeholder babyid (same known data rule
+    as outborn's dmf_babyid = "null" exclusion) and is dropped here so it
+    can't act as a fake shared merge key."""
+    daily = daily[daily["dmf_babyid"] != "null"]
+
+    bf = daily.loc[
+        daily["dmf_bf_bentfed_hw"] == 11,
+        ["dmf_babyid", "dmf_bf_bentfed_hw_dt", "dmf_bf_bentfed_hw_tm"],
+    ].rename(columns={"dmf_bf_bentfed_hw_dt": "_dt", "dmf_bf_bentfed_hw_tm": "_tm"})
+
+    exp = daily.loc[
+        daily["dmf_exp_bmilk_hw"] == 11,
+        ["dmf_babyid", "dmf_exp_bmilk_hw_dt", "dmf_exp_bmilk_hw_tm"],
+    ].rename(columns={"dmf_exp_bmilk_hw_dt": "_dt", "dmf_exp_bmilk_hw_tm": "_tm"})
+
+    candidates = pd.concat([bf, exp], ignore_index=True)
+    candidates["_initiation_dt"] = pd.to_datetime(
+        candidates["_dt"].astype(str) + " " + candidates["_tm"].astype(str), errors="coerce"
+    )
+    candidates = candidates.dropna(subset=["_initiation_dt"])
+
+    return candidates.groupby("dmf_babyid", as_index=False)["_initiation_dt"].min()
+
+
+def _attachment_stats(df: pd.DataFrame, initiation: pd.DataFrame) -> tuple[int, float, float, float]:
+    """Mirrors services.indicators._attachment_stats(): `df` is the
+    already cohort/delivery-filtered population (scr_babyid/scr_dob/
+    scr_tob) - the cohort/delivery definition is untouched, only the
+    initiation-timestamp source changed to `initiation` (DCT-based, see
+    _earliest_initiation_df()). Returns (case_count, mean_minutes,
+    min_minutes, max_minutes); case_count is unique babies with a
+    qualifying DCT initiation timestamp."""
+    df = df[df["scr_babyid"] != "null"]
+    merged = df.merge(initiation, left_on="scr_babyid", right_on="dmf_babyid", how="inner")
+    merged = merged.drop_duplicates(subset=["scr_babyid"])
+    case_count = len(merged)
     if case_count == 0:
         return 0, 0.0, 0.0, 0.0
-    birth_dt = pd.to_datetime(df["scr_dob"].astype(str) + " " + df["scr_tob"].astype(str), errors="coerce")
-    attach_dt = pd.to_datetime(
-        df["enr_bf_bentfed_hw_dt"].astype(str) + " " + df["enr_bf_bentfed_hw_tm"].astype(str),
-        errors="coerce",
+    birth_dt = pd.to_datetime(
+        merged["scr_dob"].astype(str) + " " + merged["scr_tob"].astype(str), errors="coerce"
     )
-    minutes = ((attach_dt - birth_dt).dt.total_seconds() / 60).dropna()
+    minutes = (merged["_initiation_dt"] - birth_dt).dt.total_seconds() / 60
+    # Physically-impossible negative ages (initiation before birth) come
+    # from pre-existing conflicting duplicate eligibility records for the
+    # same baby (see services.indicators._attachment_stats), not a
+    # calculation bug - excluded from min/avg/max the same way an
+    # unparseable (NaT) value already is; still counted in case_count.
+    minutes = minutes.dropna()
+    minutes = minutes[minutes >= 0]
     if len(minutes) == 0:
         return case_count, 0.0, 0.0, 0.0
     mean_minutes = round(minutes.mean(), 1)
@@ -154,9 +196,9 @@ class _Group:
         matched = df[df["enr_bf_bentfed"] == 11]
         return int(len(matched)) if self._bf_row_count else int(matched["dmf_babyid"].nunique())
 
-    def attachment_stats(self, section: str) -> tuple[int, float, float, float]:
+    def attachment_stats(self, section: str, initiation: pd.DataFrame) -> tuple[int, float, float, float]:
         df = self.bf_attachment_nvd if section == "nvd" else self.bf_attachment_csection
-        return _attachment_stats(df)
+        return _attachment_stats(df, initiation)
 
 
 def get_overview_total_cases(start=None, end=None) -> dict:
@@ -204,6 +246,12 @@ def get_overview_total_cases(start=None, end=None) -> dict:
 
     groups = [msncu, pnc, outborn]
 
+    # DCT initiation timestamps aren't themselves period-filtered - only
+    # which babies are in scope is (via the already scr_dof-filtered
+    # `eligibility` feeding every group above), matching how the old
+    # mother-based timestamp was pulled in regardless of its own date.
+    initiation = _earliest_initiation_df(daily)
+
     def summed(method: str, section: str) -> int:
         return sum(getattr(g, method)(section) for g in groups)
 
@@ -212,7 +260,7 @@ def get_overview_total_cases(start=None, end=None) -> dict:
         return _avg_kmc_hours(rows)
 
     def combined_attachment(section: str) -> dict:
-        stats = [g.attachment_stats(section) for g in groups]
+        stats = [g.attachment_stats(section, initiation) for g in groups]
         total_count = sum(count for count, _, _, _ in stats)
         # Mirrors get_inborn_nvd_attachment_hours()'s own combination
         # pattern exactly (mean of each group's own mean, excluding

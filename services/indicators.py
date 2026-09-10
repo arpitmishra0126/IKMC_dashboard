@@ -581,35 +581,85 @@ def get_inborn_csection_attachment_hours():
     return round(sum(values) / len(values), 1)
 
 # ==================================================
-# ATTACHMENT AGE - MIN/AVG/MAX MINUTES + CASE COUNT
+# ATTACHMENT AGE / EARLY INITIATION - MIN/AVG/MAX MINUTES + CASE COUNT
 # ==================================================
-# New, additive companion functions - the existing get_*_attachment_hours()
+# Additive companion functions - the existing get_*_attachment_hours()
 # functions above are NOT modified, so every existing caller is unaffected.
-# "Achieving attachment" = enr_bf_bentfed_hw_dt is non-null (same existing
-# definition the hours functions already filter on - no new/clinical
-# threshold introduced). Minutes are computed directly from the raw
-# datetime difference (seconds / 60) and rounded once at the end, not
-# derived from the already-rounded hours value, so precision isn't lost.
+#
+# Confirmed official source (senior sign-off): the Daily Care Tracking
+# (DCT) form - NOT mother.enr_bf_bentfed_hw_dt/tm (the old enrollment-time
+# field, which is sparse and only used for the legacy hours functions
+# above). For each baby, the earliest qualifying initiation datetime is
+# the earlier of two DCT variables, each only qualifying where its value
+# is 11 ("Yes" - the same Yes/No coding used throughout this dataset):
+#   - dmf_bf_bentfed_hw (breastfed)      -> dmf_bf_bentfed_hw_dt/_tm
+#   - dmf_exp_bmilk_hw  (expressed milk) -> dmf_exp_bmilk_hw_dt/_tm
+# No clinical threshold is applied - ages beyond 72h are intentionally
+# included, not capped.
+
+def get_earliest_initiation_df():
+    """One row per baby (dmf_babyid) with the earliest qualifying DCT
+    initiation datetime (`_initiation_dt`), pooling every qualifying
+    (variable, day) candidate across that baby's daily-care-tracking rows
+    and taking the overall minimum - equivalent to "use the earlier of the
+    two variables" when both are Yes on the same day, and also correctly
+    picks the earliest across multiple days of tracking."""
+    daily = get_daily_df()
+    # "null" is a literal placeholder babyid used for records with no real
+    # baby ID (same known data-handling rule as outborn's dmf_babyid = "null"
+    # exclusion) - without this, the placeholder acts as a fake shared key
+    # and cross-matches unrelated babies during the merge in _attachment_stats.
+    daily = daily[daily["dmf_babyid"] != "null"]
+
+    bf = daily.loc[
+        daily["dmf_bf_bentfed_hw"] == 11,
+        ["dmf_babyid", "dmf_bf_bentfed_hw_dt", "dmf_bf_bentfed_hw_tm"],
+    ].rename(columns={"dmf_bf_bentfed_hw_dt": "_dt", "dmf_bf_bentfed_hw_tm": "_tm"})
+
+    exp = daily.loc[
+        daily["dmf_exp_bmilk_hw"] == 11,
+        ["dmf_babyid", "dmf_exp_bmilk_hw_dt", "dmf_exp_bmilk_hw_tm"],
+    ].rename(columns={"dmf_exp_bmilk_hw_dt": "_dt", "dmf_exp_bmilk_hw_tm": "_tm"})
+
+    candidates = pd.concat([bf, exp], ignore_index=True)
+    candidates["_initiation_dt"] = pd.to_datetime(
+        candidates["_dt"].astype(str) + " " + candidates["_tm"].astype(str), errors="coerce"
+    )
+    candidates = candidates.dropna(subset=["_initiation_dt"])
+
+    return candidates.groupby("dmf_babyid", as_index=False)["_initiation_dt"].min()
+
 
 def _attachment_stats(df):
-    """Shared by every get_*_attachment_stats() function below. Mirrors
-    the exact same filter/parse steps as get_*_attachment_hours(), just
-    also returning the case count, min, and max, using minutes instead
-    of hours. Returns (case_count, mean_minutes, min_minutes, max_minutes)."""
+    """Shared by every get_*_attachment_stats() function below. `df` is
+    any cohort/delivery-filtered population with scr_babyid/scr_dob/
+    scr_tob (e.g. get_msncu_nvd_enrollment_df(), get_outborn_nvd_df()) -
+    the cohort/delivery definition itself is untouched, only the
+    initiation-timestamp source changed (see module note above). Returns
+    (case_count, mean_minutes, min_minutes, max_minutes); case_count is
+    unique babies with a qualifying DCT initiation timestamp."""
 
-    df = df[df["enr_bf_bentfed_hw_dt"].notna()]
-    case_count = len(df)
+    df = df[df["scr_babyid"] != "null"]
+    merged = df.merge(get_earliest_initiation_df(), left_on="scr_babyid", right_on="dmf_babyid", how="inner")
+    merged = merged.drop_duplicates(subset=["scr_babyid"])
+    case_count = len(merged)
 
     if case_count == 0:
         return 0, 0, 0, 0
 
-    birth_dt = pd.to_datetime(df["scr_dob"].astype(str) + " " + df["scr_tob"].astype(str), errors="coerce")
-    attach_dt = pd.to_datetime(
-        df["enr_bf_bentfed_hw_dt"].astype(str) + " " + df["enr_bf_bentfed_hw_tm"].astype(str),
-        errors="coerce",
+    birth_dt = pd.to_datetime(
+        merged["scr_dob"].astype(str) + " " + merged["scr_tob"].astype(str), errors="coerce"
     )
-    minutes = (attach_dt - birth_dt).dt.total_seconds() / 60
+    minutes = (merged["_initiation_dt"] - birth_dt).dt.total_seconds() / 60
+    # A negative value is physically impossible (initiation before birth)
+    # and only occurs for a baby with conflicting duplicate eligibility
+    # records (different scr_dob/scr_tob per record) - a pre-existing data
+    # quality issue already surfaced by the Duplicate Babies check, not a
+    # calculation bug. Excluded from min/avg/max the same way an
+    # unparseable (NaT) value already is; still counted in case_count
+    # since it does have a qualifying DCT timestamp.
     minutes = minutes.dropna()
+    minutes = minutes[minutes >= 0]
 
     if len(minutes) == 0:
         return case_count, 0, 0, 0
