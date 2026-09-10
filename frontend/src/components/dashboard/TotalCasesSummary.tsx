@@ -1,6 +1,5 @@
 import { Users } from "lucide-react"
 
-import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -14,12 +13,11 @@ interface TotalCasesSummaryProps {
 /**
  * Period-aware "Total Cases" summary (senior feedback): total unique
  * babies across Inborn + Outborn, plus Delivery Type / SSC<2h / Avg KMC /
- * Exclusive BF / Attachment age as one cohesive card - not five/seven
- * separate KPI cards. Same visual pattern as the Overview Cohort Summary's
- * CohortSummaryCard (icon + big total, then an NVD-vs-C-Section table),
- * reusing the same MetricComparisonTable component. Only the computed
- * attachment-age value is shown here (no hardcoded-display string - that
- * distinction only exists for the separate Cohort Summary cards).
+ * Exclusive BF as one cohesive card. Same visual pattern as the Overview
+ * Cohort Summary's CohortSummaryCard (icon + big total, then an
+ * NVD-vs-C-Section table), reusing the same MetricComparisonTable
+ * component. Attachment Age lives in its own AttachmentAgeCard directly
+ * below this one, not as a row here.
  */
 export function TotalCasesSummary({ summary }: TotalCasesSummaryProps) {
   const rows = [
@@ -42,11 +40,6 @@ export function TotalCasesSummary({ summary }: TotalCasesSummaryProps) {
       label: "Exclusive BF",
       nvd: formatNumber(summary.exclusive_bf.nvd),
       csection: formatNumber(summary.exclusive_bf.csection),
-    },
-    {
-      label: "Attachment age",
-      nvd: <AttachmentAgeStat stat={summary.attachment.nvd} />,
-      csection: <AttachmentAgeStat stat={summary.attachment.csection} />,
     },
   ]
 

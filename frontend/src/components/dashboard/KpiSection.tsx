@@ -17,6 +17,7 @@ import { useOverview } from "@/hooks/useOverview"
 import { formatDateTime } from "@/lib/format"
 import type { OverviewPeriod } from "@/types/overview"
 
+import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "./AttachmentAgeCard"
 import { CompactMetricCard, CompactMetricCardSkeleton } from "./CompactMetricCard"
 import { KpiCard, KpiCardSkeleton } from "./KpiCard"
 import { PeriodFilter } from "./PeriodFilter"
@@ -112,6 +113,12 @@ export function KpiSection() {
             <TotalCasesSummarySkeleton />
           ) : (
             <TotalCasesSummary summary={data.total_cases_summary} />
+          )}
+
+          {isInitialLoading || !data ? (
+            <AttachmentAgeCardSkeleton />
+          ) : (
+            <AttachmentAgeCard attachment={data.total_cases_summary.attachment} />
           )}
         </>
       )}
