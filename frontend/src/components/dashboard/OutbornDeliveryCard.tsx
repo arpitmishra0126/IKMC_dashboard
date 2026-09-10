@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react"
 
-import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type CohortAccent, COHORT_ACCENT_STYLES } from "@/lib/cohortAccent"
@@ -17,10 +16,12 @@ interface OutbornDeliveryCardProps {
 
 /**
  * Reproduces one delivery-mode block of pages/3_Outborn.py (NVD or
- * C-Section): case count, SSC<2h, avg KMC, exclusive BF, attachment - each
- * already a single value per docs/API_MIGRATION_PLAN.md (unlike the
- * Overview cohort cards, there is no further NVD-vs-C-Section split
- * within a single outborn delivery-mode card).
+ * C-Section): case count, SSC<2h, avg KMC, exclusive BF - each already a
+ * single value per docs/API_MIGRATION_PLAN.md (unlike the Overview cohort
+ * cards, there is no further NVD-vs-C-Section split within a single
+ * outborn delivery-mode card). Attachment Age lives in its own full-width
+ * AttachmentAgeCard below both delivery-mode sections (see
+ * OutbornPage.tsx), not embedded in this card - it was too cramped here.
  */
 export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: OutbornDeliveryCardProps) {
   const styles = COHORT_ACCENT_STYLES[accent]
@@ -42,7 +43,7 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent>
         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {metrics.map((metric) => (
             <div key={metric.label}>
@@ -53,10 +54,6 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
             </div>
           ))}
         </dl>
-        <div className="bg-muted/40 rounded-md border p-3">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide">Attachment age</p>
-          <AttachmentAgeStat stat={unit.attachment} />
-        </div>
       </CardContent>
     </Card>
   )

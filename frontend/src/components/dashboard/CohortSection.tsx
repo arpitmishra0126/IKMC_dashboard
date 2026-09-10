@@ -4,6 +4,7 @@ import { ErrorState } from "@/components/common/ErrorState"
 import { Section } from "@/components/layout/Section"
 import { useCohorts } from "@/hooks/useCohorts"
 
+import { CohortAttachmentAgeCard, CohortAttachmentAgeCardSkeleton } from "./CohortAttachmentAgeCard"
 import { CohortSummaryCard, CohortSummaryCardSkeleton } from "./CohortSummaryCard"
 import { CohortTotalBanner, CohortTotalBannerSkeleton } from "./CohortTotalBanner"
 
@@ -63,6 +64,15 @@ export function CohortSection() {
               </>
             )}
           </div>
+
+          {isInitialLoading || !data ? (
+            <CohortAttachmentAgeCardSkeleton />
+          ) : (
+            <CohortAttachmentAgeCard
+              inborn={data.inborn.attachment}
+              outborn={data.outborn.attachment}
+            />
+          )}
         </div>
       )}
     </Section>

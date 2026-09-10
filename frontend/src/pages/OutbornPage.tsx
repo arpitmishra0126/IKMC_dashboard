@@ -1,5 +1,6 @@
 import { Ambulance, Scissors, TrendingUp } from "lucide-react"
 
+import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "@/components/dashboard/AttachmentAgeCard"
 import { ErrorState } from "@/components/common/ErrorState"
 import { KpiCard, KpiCardSkeleton } from "@/components/dashboard/KpiCard"
 import { OutbornDeliveryCard, OutbornDeliveryCardSkeleton } from "@/components/dashboard/OutbornDeliveryCard"
@@ -64,6 +65,14 @@ export function OutbornPage() {
           <OutbornDeliveryCard title="C-Section" unit={data.csection} icon={Scissors} accent="outborn" />
         )}
       </Section>
+
+      {isInitialLoading || !data ? (
+        <AttachmentAgeCardSkeleton />
+      ) : (
+        <AttachmentAgeCard
+          attachment={{ nvd: data.nvd.attachment, csection: data.csection.attachment }}
+        />
+      )}
     </>
   )
 }

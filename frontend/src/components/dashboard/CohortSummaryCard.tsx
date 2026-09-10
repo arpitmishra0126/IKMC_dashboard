@@ -1,9 +1,6 @@
 import type { LucideIcon } from "lucide-react"
-import { Info } from "lucide-react"
 
-import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { type CohortAccent, COHORT_ACCENT_STYLES } from "@/lib/cohortAccent"
@@ -48,9 +45,10 @@ const METRIC_ROWS: Array<{
 
 /**
  * Reproduces components/cohort_summary.py as an NVD vs. C-Section
- * comparison table (total cases + delivery/SSC/KMC/BF rows), plus an
- * attachment subsection showing the real computed attachment age (minutes)
- * and the number of cases with a recorded attachment timestamp.
+ * comparison table (total cases + delivery/SSC/KMC/BF rows). Attachment
+ * Age lives in its own full-width CohortAttachmentAgeCard below the two
+ * Inborn/Outborn cards, not embedded here - it was too cramped alongside
+ * this table.
  */
 export function CohortSummaryCard({ title, cohort, accent, icon: Icon }: CohortSummaryCardProps) {
   const styles = COHORT_ACCENT_STYLES[accent]
@@ -72,48 +70,8 @@ export function CohortSummaryCard({ title, cohort, accent, icon: Icon }: CohortS
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <MetricComparisonTable rows={METRIC_ROWS.map((row) => ({ label: row.label, ...row.read(cohort) }))} />
-
-        <AttachmentSummary cohort={cohort} badgeClassName={styles.badge} />
       </CardContent>
     </Card>
-  )
-}
-
-function AttachmentSummary({
-  cohort,
-  badgeClassName,
-}: {
-  cohort: CohortCard
-  badgeClassName: string
-}) {
-  return (
-    <div className="bg-muted/40 rounded-md border p-3">
-      <div className="mb-2 flex items-center gap-1.5">
-        <span className="text-xs font-semibold uppercase tracking-wide">Attachment age</span>
-        <Info
-          className="text-muted-foreground size-3.5"
-          aria-hidden="true"
-        />
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div>
-          <div className="mb-1">
-            <Badge variant="outline" className={badgeClassName}>
-              NVD
-            </Badge>
-          </div>
-          <AttachmentAgeStat stat={cohort.attachment.nvd} />
-        </div>
-        <div>
-          <div className="mb-1">
-            <Badge variant="outline" className={badgeClassName}>
-              C-Section
-            </Badge>
-          </div>
-          <AttachmentAgeStat stat={cohort.attachment.csection} />
-        </div>
-      </div>
-    </div>
   )
 }
 

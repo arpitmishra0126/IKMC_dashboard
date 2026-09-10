@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react"
 
-import { AttachmentAgeStat } from "@/components/dashboard/AttachmentAgeStat"
 import { MetricComparisonTable } from "@/components/dashboard/MetricComparisonTable"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,11 +15,14 @@ interface InbornUnitCardProps {
 
 /**
  * Reproduces one MSNCU/PNC section of pages/2_Inborn.py: unit-level avg
- * iKMC + case count, then the full NVD-vs-C-Section metric set (delivery,
- * SSC<2h, avg KMC, exclusive BF, attachment, coverage %, achieved count).
+ * iKMC + case count, then the NVD-vs-C-Section metric set (delivery,
+ * SSC<2h, avg KMC, exclusive BF, coverage %, achieved count).
  * `nvd_definition_note` (from the API - see docs/MIGRATION_DECISIONS.md #5)
  * is shown as-is rather than hidden, since exclusive_bf.nvd uses a
  * narrower NVD definition than the other rows in this same table.
+ * Attachment Age lives in its own full-width AttachmentAgeCard directly
+ * below this one (see InbornPage.tsx), not embedded in this table - it
+ * was too cramped here.
  */
 export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornUnitCardProps) {
   const rows = [
@@ -43,11 +45,6 @@ export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornU
       label: "Exclusive BF",
       nvd: formatNumber(unit.exclusive_bf.nvd),
       csection: formatNumber(unit.exclusive_bf.csection),
-    },
-    {
-      label: "Attachment age",
-      nvd: <AttachmentAgeStat stat={unit.attachment.nvd} />,
-      csection: <AttachmentAgeStat stat={unit.attachment.csection} />,
     },
     {
       label: "iKMC coverage",

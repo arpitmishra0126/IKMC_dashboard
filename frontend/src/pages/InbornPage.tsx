@@ -1,5 +1,6 @@
 import { HeartPulse, ShieldPlus, Stethoscope } from "lucide-react"
 
+import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "@/components/dashboard/AttachmentAgeCard"
 import { ErrorState } from "@/components/common/ErrorState"
 import { InbornUnitCard, InbornUnitCardSkeleton } from "@/components/dashboard/InbornUnitCard"
 import { KpiCard, KpiCardSkeleton } from "@/components/dashboard/KpiCard"
@@ -44,27 +45,39 @@ export function InbornPage() {
 
       <Section title="MSNCU" description="Mother Sick Newborn Care Unit">
         {isInitialLoading || !data ? (
-          <InbornUnitCardSkeleton title="MSNCU" />
+          <>
+            <InbornUnitCardSkeleton title="MSNCU" />
+            <AttachmentAgeCardSkeleton />
+          </>
         ) : (
-          <InbornUnitCard
-            title="MSNCU"
-            description="Mother Sick Newborn Care Unit"
-            unit={data.msncu}
-            icon={Stethoscope}
-          />
+          <>
+            <InbornUnitCard
+              title="MSNCU"
+              description="Mother Sick Newborn Care Unit"
+              unit={data.msncu}
+              icon={Stethoscope}
+            />
+            <AttachmentAgeCard attachment={data.msncu.attachment} />
+          </>
         )}
       </Section>
 
       <Section title="PNC" description="Post Natal Care">
         {isInitialLoading || !data ? (
-          <InbornUnitCardSkeleton title="PNC" />
+          <>
+            <InbornUnitCardSkeleton title="PNC" />
+            <AttachmentAgeCardSkeleton />
+          </>
         ) : (
-          <InbornUnitCard
-            title="PNC"
-            description="Post Natal Care"
-            unit={data.pnc}
-            icon={ShieldPlus}
-          />
+          <>
+            <InbornUnitCard
+              title="PNC"
+              description="Post Natal Care"
+              unit={data.pnc}
+              icon={ShieldPlus}
+            />
+            <AttachmentAgeCard attachment={data.pnc.attachment} />
+          </>
         )}
       </Section>
     </>

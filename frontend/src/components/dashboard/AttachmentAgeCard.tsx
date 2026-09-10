@@ -28,7 +28,13 @@ function StatBox({ label, minutes }: { label: string; minutes: number }) {
   )
 }
 
-function CohortPanel({ label, stat }: { label: string; stat: AttachmentStat }) {
+/**
+ * One equal-width Min/Avg/Max panel for a single delivery-type group
+ * (label + case count, then three stat boxes) - exported so other
+ * Attachment Age displays (e.g. the Cohort Summary cards) can reuse the
+ * exact same visual structure as this card without duplicating it.
+ */
+export function CohortPanel({ label, stat }: { label: string; stat: AttachmentStat }) {
   return (
     <div className="border-border/60 bg-muted/20 rounded-lg border p-3">
       <div className="mb-3">
