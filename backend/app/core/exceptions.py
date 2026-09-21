@@ -13,6 +13,16 @@ class UnknownValidationCheckError(Exception):
         )
 
 
+class InvalidDateRangeError(Exception):
+    """Raised when the Overview Reporting Period filter's custom
+    from_date/to_date query params are invalid (from_date after to_date,
+    or only one of the pair given)."""
+
+    def __init__(self, detail: str):
+        self.detail = detail
+        super().__init__(detail)
+
+
 class UpstreamDataError(Exception):
     """Raised when the existing services.loader / services.api_service code
     fails to load data (e.g. upstream API unreachable, bad credentials,

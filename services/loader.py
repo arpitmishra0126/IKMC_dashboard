@@ -106,6 +106,22 @@ def get_last_sync():
 
     return latest_date
 
+
+def get_last_enrollment_date():
+    """Latest STUDY ENROLLMENT DATE (mother.enr_dof) present in the data -
+    NOT the same as get_last_sync()'s scr_dof-based "Latest screening
+    date" (a distinct, already-displayed concept, left untouched). Added
+    to anchor the Overview Reporting Period filter's relative periods
+    (Last 7/30 Days, Last 3 Months) to real enrollment-date data instead
+    of the browser's wall-clock date."""
+    data = load_all_data()
+    latest_date = pd.to_datetime(
+        data["mother"]["enr_dof"],
+        errors="coerce"
+    ).max()
+
+    return latest_date
+
 # ==========================================================
 # DEBUG
 # ==========================================================

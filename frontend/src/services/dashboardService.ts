@@ -12,7 +12,7 @@ import type { HealthResponse } from "@/types/health"
 import type { InbornResponse } from "@/types/inborn"
 import type { RefreshResponse, SyncMetadataResponse } from "@/types/meta"
 import type { OutbornResponse } from "@/types/outborn"
-import type { OverviewPeriod, OverviewResponse } from "@/types/overview"
+import type { OverviewDateRange, OverviewPeriod, OverviewResponse } from "@/types/overview"
 import type { ValidationDetailResponse } from "@/types/validation"
 
 export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
@@ -29,8 +29,13 @@ export function refreshData(signal?: AbortSignal): Promise<RefreshResponse> {
 
 export function getOverview(
   period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
   signal?: AbortSignal
 ): Promise<OverviewResponse> {
+  if (customRange) {
+    const params = new URLSearchParams({ from_date: customRange.from, to_date: customRange.to })
+    return apiGet<OverviewResponse>(`/api/dashboard/overview?${params.toString()}`, signal)
+  }
   const query = period === "all" ? "" : `?period=${period}`
   return apiGet<OverviewResponse>(`/api/dashboard/overview${query}`, signal)
 }

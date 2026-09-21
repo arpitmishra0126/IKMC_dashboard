@@ -11,12 +11,12 @@ indicator functions (and everything they're built on - get_master_df,
 get_enrollment_master_df, get_ssc_under_2h_df, ...) was judged too
 invasive for this feature. Per explicit instruction, this module instead
 reimplements the SAME formulas as a small, self-contained calculation
-path that starts from a scr_dof-filtered eligibility slice, so:
+path that starts from an enrollment-date (mother.enr_dof) -filtered
+eligibility slice, so:
 
-- services/indicators.py is completely unchanged - zero lines touched,
-  not even additions.
 - Every existing caller (Cohort Summary, Inborn page, Outborn page,
-  Discharge page, tests, the baseline snapshot) is completely unaffected.
+  Discharge page, tests, the baseline snapshot) is completely unaffected -
+  none of them pass start/end.
 
 Every formula below is copied verbatim from the matching
 services.indicators.py function - see the comment above each block for
@@ -53,13 +53,21 @@ from services.loader import load_all_data
 _DELIVERY_MODE = FIELD_MAP["delivery_mode"]
 
 
-def _filter_by_scr_dof(df: pd.DataFrame, start=None, end=None) -> pd.DataFrame:
-    """Same semantics as indicators._filter_by_scr_dof, reimplemented here
-    so this module has no import-time dependency on services.indicators."""
+def _filter_by_enr_dof(df: pd.DataFrame, mother: pd.DataFrame, start=None, end=None) -> pd.DataFrame:
+    """Same semantics as indicators._filter_by_enr_dof, reimplemented here
+    so this module has no import-time dependency on services.indicators.
+    Filters by the STUDY ENROLLMENT DATE (mother.enr_dof - "Enrollment,
+    Date of Form"), NOT scr_dof (eligibility's "Screening, Date of Form")
+    - see that function's docstring in services/indicators.py for the full
+    field-identification evidence. `mother` is passed in rather than
+    reloaded here since every caller already has it in hand."""
     if start is None or end is None:
         return df
-    dof = pd.to_datetime(df["scr_dof"], errors="coerce")
-    return df[(dof >= start) & (dof <= end)]
+    enr_dof_by_babyid = mother.set_index(FIELD_MAP["mother_babyid"])["enr_dof"]
+    enr_dof = pd.to_datetime(
+        df[FIELD_MAP["eligibility_babyid"]].map(enr_dof_by_babyid), errors="coerce"
+    )
+    return df[(enr_dof >= start) & (enr_dof <= end)]
 
 
 def _avg_kmc_hours(df: pd.DataFrame) -> float:
@@ -210,8 +218,8 @@ def get_overview_total_cases(start=None, end=None) -> dict:
     services.indicators.py functions each piece mirrors.
     """
     data = load_all_data()
-    eligibility = _filter_by_scr_dof(data["eligibility"], start, end)
     mother = data["mother"]
+    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
     daily = data["daily"]
 
     enrollment = eligibility.merge(

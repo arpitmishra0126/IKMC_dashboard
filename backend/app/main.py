@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import dashboard, meta, validation
 from app.core.config import settings
-from app.core.exceptions import UnknownValidationCheckError, UpstreamDataError
+from app.core.exceptions import InvalidDateRangeError, UnknownValidationCheckError, UpstreamDataError
 
 app = FastAPI(
     title=settings.app_name,
@@ -52,6 +52,13 @@ async def handle_unknown_validation_check(
             "known_checks": exc.known_checks,
         },
     )
+
+
+@app.exception_handler(InvalidDateRangeError)
+async def handle_invalid_date_range(
+    request: Request, exc: InvalidDateRangeError
+) -> JSONResponse:
+    return JSONResponse(status_code=400, content={"detail": exc.detail})
 
 
 @app.exception_handler(UpstreamDataError)

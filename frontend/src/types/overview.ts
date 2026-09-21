@@ -25,13 +25,14 @@ export interface OverviewResponse {
   screened: number
   eligible_for_enrollment: number
   /** Filtered by dis_inf_dt_outcome (actual infant outcome date), same
-   * resolved period boundaries as the 3 fields above (which use scr_dof). */
+   * resolved period boundaries as the 3 fields above (which use the
+   * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof). */
   discharged: number
   referred: number
   lama: number
   death: number
   /** ISO date strings. For "all", these show the actual earliest/latest
-   * scr_dof present in the data (not filter bounds - "all" applies no
+   * enr_dof present in the data (not filter bounds - "all" applies no
    * filtering, so existing values stay exactly as before this feature). */
   period_start: string | null
   period_end: string | null
@@ -41,9 +42,22 @@ export interface OverviewResponse {
 /**
  * Matches the `period` query param accepted by GET /api/dashboard/overview
  * (backend/app/api/dashboard.py). Relative periods are resolved server-side,
- * anchored to the latest scr_dof present in the data - never the browser's
- * clock. Applies to the 3 Overview KPI cards, the 4 discharge outcome
- * counts, and the Total Cases summary; nothing else (Still Admitted,
- * Cohort Summary, Data Quality, the dedicated Discharge page).
+ * anchored to the latest STUDY ENROLLMENT DATE (mother.enr_dof) present in
+ * the data - never the browser's clock. Applies to the 3 Overview KPI
+ * cards, the 4 discharge outcome counts, and the Total Cases summary;
+ * nothing else (Still Admitted, Cohort Summary, Data Quality, the
+ * dedicated Discharge page).
  */
 export type OverviewPeriod = "all" | "7d" | "30d" | "3m"
+
+/**
+ * Custom Reporting Period range (both bounds required, inclusive, ISO
+ * "YYYY-MM-DD" date strings) - matches the from_date/to_date query params
+ * accepted by GET /api/dashboard/overview. Takes priority over `period`
+ * when both are somehow present. Filtered by the same STUDY ENROLLMENT
+ * DATE (mother.enr_dof) as the relative periods above.
+ */
+export interface OverviewDateRange {
+  from: string
+  to: string
+}

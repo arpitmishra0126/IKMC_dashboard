@@ -22,9 +22,11 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("/overview", response_model=OverviewResponse)
 def get_overview(
-    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$")
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
 ) -> OverviewResponse:
-    return OverviewResponse(**overview_service.get_overview(period))
+    return OverviewResponse(**overview_service.get_overview(period, from_date, to_date))
 
 
 @router.get("/cohorts", response_model=CohortsResponse)

@@ -15,7 +15,7 @@ import { Section } from "@/components/layout/Section"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useOverview } from "@/hooks/useOverview"
 import { formatDateTime } from "@/lib/format"
-import type { OverviewPeriod } from "@/types/overview"
+import type { OverviewDateRange, OverviewPeriod } from "@/types/overview"
 
 import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "./AttachmentAgeCard"
 import { CompactMetricCard, CompactMetricCardSkeleton } from "./CompactMetricCard"
@@ -32,22 +32,37 @@ const DISCHARGE_LABELS = ["Discharged", "Referred", "LAMA", "Death"] as const
  * GET /api/dashboard/overview. Icons are purely decorative/contextual and
  * do not add or infer any new metric.
  *
- * The period selector (PeriodFilter, unchanged) controls this 3-card row
- * (scr_dof-filtered), the "Discharge Outcomes" row (dis_inf_dt_outcome-
- * filtered), the displayed period start/end date range, and the "Total
- * Cases" summary below - all from the same GET /api/dashboard/overview
- * response, so there is exactly one fetch per period change. Cohort
- * Summary, Data Quality, Still Admitted, and every other page remain
- * unaffected.
+ * The Reporting Period selector controls this 3-card row (filtered by the
+ * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof), the "Discharge
+ * Outcomes" row (dis_inf_dt_outcome-filtered, same resolved boundaries),
+ * the displayed period start/end date range, and the "Total Cases"
+ * summary below - all from the same GET /api/dashboard/overview response,
+ * so there is exactly one fetch per period/range change. Cohort Summary,
+ * Data Quality, Still Admitted, and every other page remain unaffected.
+ *
+ * A custom From/To range (via PeriodFilter's Apply button) takes priority
+ * over the preset `period` once applied; clicking a preset button clears
+ * it and goes back to that preset immediately, including "All Data".
  */
 export function KpiSection() {
   const [period, setPeriod] = useState<OverviewPeriod>("all")
-  const { data, error, isInitialLoading, refetch } = useOverview(period)
+  const [customRange, setCustomRange] = useState<OverviewDateRange | undefined>(undefined)
+  const { data, error, isInitialLoading, refetch } = useOverview(period, customRange)
 
   return (
     <Section
       title="Key Performance Indicators (KPIs)"
-      actions={<PeriodFilter value={period} onChange={setPeriod} />}
+      actions={
+        <PeriodFilter
+          value={period}
+          onChange={(nextPeriod) => {
+            setPeriod(nextPeriod)
+            setCustomRange(undefined)
+          }}
+          isCustomActive={customRange !== undefined}
+          onApplyCustomRange={setCustomRange}
+        />
+      }
     >
       {error ? (
         <ErrorState message={error.detail} onRetry={refetch} />

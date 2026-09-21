@@ -6,10 +6,11 @@ import streamlit as st
 def _filter_by_scr_dof(df, start=None, end=None):
     """
     Optional scr_dof (screening date) range filter, applied only when both
-    bounds are given. Every existing zero-arg caller is unaffected (start
-    and end default to None, returning df unchanged) - this exists solely
-    to support the Overview KPI period selector; no calculation logic is
-    changed.
+    bounds are given. No longer called anywhere (see _filter_by_enr_dof
+    below) - scr_dof is the screening date, not the study enrollment date,
+    so it was the wrong field for the Overview Reporting Period filter.
+    Left defined, unused, rather than deleted, since it may still be a
+    useful screening-date filter for something else later.
     """
     if start is None or end is None:
         return df
@@ -18,9 +19,39 @@ def _filter_by_scr_dof(df, start=None, end=None):
     return df[(dof >= start) & (dof <= end)]
 
 
+def _filter_by_enr_dof(df, start=None, end=None):
+    """
+    Optional STUDY ENROLLMENT DATE range filter, applied only when both
+    bounds are given. Every existing zero-arg caller is unaffected (start
+    and end default to None, returning df unchanged) - this exists solely
+    to support the Overview Reporting Period filter; no other calculation
+    logic is changed.
+
+    The enrollment date is mother.enr_dof ("Enrollment - Date of Form"),
+    NOT eligibility.scr_dof ("Screening - Date of Form"). Confirmed by
+    inspection: scr_dof is populated for every screened baby (4892/4892),
+    while enr_dof is populated only for the much smaller subset who were
+    actually enrolled (364/364 mother rows) - and enr_dof is always on or
+    after that same baby's scr_dof (0-22 days later, median same-day,
+    never earlier), consistent with "screening happens, then enrollment
+    follows." `df` here is an eligibility-shaped frame (has scr_babyid,
+    not enr_dof directly), so enr_dof is pulled in via a babyid lookup
+    against the mother/enrollment table.
+    """
+    if start is None or end is None:
+        return df
+
+    mother = load_all_data()["mother"]
+    enr_dof_by_babyid = mother.set_index(FIELD_MAP["mother_babyid"])["enr_dof"]
+    enr_dof = pd.to_datetime(
+        df[FIELD_MAP["eligibility_babyid"]].map(enr_dof_by_babyid), errors="coerce"
+    )
+    return df[(enr_dof >= start) & (enr_dof <= end)]
+
+
 def get_eligibility_df(start=None, end=None):
     data = load_all_data()
-    return _filter_by_scr_dof(data["eligibility"], start, end)
+    return _filter_by_enr_dof(data["eligibility"], start, end)
 
 # ==================================================
 # BASE DATASETS - DASHBOARD MEASURES
