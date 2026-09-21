@@ -13,4 +13,6 @@ export interface DischargeResponse {
   summary: DischargeSummary
   inborn: DischargeBreakdown
   outborn: DischargeBreakdown
+  period_start: string | null
+  period_end: string | null
 }

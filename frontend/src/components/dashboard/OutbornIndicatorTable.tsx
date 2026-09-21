@@ -49,8 +49,8 @@ export function OutbornIndicatorTable({ data, icon: Icon }: OutbornIndicatorTabl
     },
     {
       label: "iKMC coverage",
-      nvd: `${data.nvd.coverage.percentage}% (${formatNumber(data.nvd.coverage.achieved_count)}/${formatNumber(data.nvd.case_count)})`,
-      csection: `${data.csection.coverage.percentage}% (${formatNumber(data.csection.coverage.achieved_count)}/${formatNumber(data.csection.case_count)})`,
+      nvd: `${data.nvd.coverage.percentage}% (${formatNumber(data.nvd.coverage.achieved_count)}/${formatNumber(data.nvd.coverage.total_count)})`,
+      csection: `${data.csection.coverage.percentage}% (${formatNumber(data.csection.coverage.achieved_count)}/${formatNumber(data.csection.coverage.total_count)})`,
     },
     {
       label: "Achieved count",

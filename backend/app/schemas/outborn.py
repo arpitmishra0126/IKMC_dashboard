@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.schemas.common import AttachmentStat, CoverageDetail
@@ -18,3 +20,5 @@ class OutbornResponse(BaseModel):
     nvd: OutbornDeliveryUnit
     csection: OutbornDeliveryUnit
     outborn_definition_note: str
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None

@@ -17,6 +17,11 @@ export interface DeliverySplitFloat {
 export interface CoverageDetail {
   percentage: number
   achieved_count: number
+  /** Exact denominator `percentage` was computed against - always
+   * unfiltered (coverage is never period-filtered). Use this, not
+   * delivery/case_count, when displaying the "(achieved/denominator)"
+   * fraction, since those ARE period-filtered on Inborn/Outborn. */
+  total_count: number
 }
 
 export interface CoverageSplit {

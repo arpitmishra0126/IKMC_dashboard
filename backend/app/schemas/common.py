@@ -15,6 +15,13 @@ class DeliverySplitFloat(BaseModel):
 class CoverageDetail(BaseModel):
     percentage: float
     achieved_count: int
+    # The exact denominator get_*_coverage() divides achieved_count by
+    # (get_{prefix}_count(), always unfiltered - coverage is never
+    # period-filtered). Exposed separately from `delivery`/`case_count`
+    # because those ARE period-filtered elsewhere on Inborn/Outborn, so
+    # reusing them here would silently produce a percentage/fraction
+    # mismatch when a Reporting Period is applied.
+    total_count: int
 
 
 class CoverageSplit(BaseModel):

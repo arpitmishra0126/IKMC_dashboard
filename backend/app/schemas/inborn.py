@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.schemas.common import AttachmentStatSplit, CoverageSplit, DeliverySplitFloat, DeliverySplitInt
@@ -19,3 +21,5 @@ class InbornResponse(BaseModel):
     overall_avg_kmc_hours: float
     msncu: InbornUnitDetail
     pnc: InbornUnitDetail
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None

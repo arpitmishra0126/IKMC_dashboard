@@ -138,7 +138,9 @@ def test_data_quality_schema(client):
 
 def test_inborn_schema(client):
     body = client.get("/api/dashboard/inborn").json()
-    assert set(body.keys()) == {"overall_avg_kmc_hours", "msncu", "pnc"}
+    assert set(body.keys()) == {
+        "overall_avg_kmc_hours", "msncu", "pnc", "period_start", "period_end",
+    }
     for unit in ("msncu", "pnc"):
         detail = body[unit]
         assert set(detail.keys()) == {
@@ -147,7 +149,7 @@ def test_inborn_schema(client):
             "coverage", "nvd_definition_note",
         }
         assert set(detail["coverage"].keys()) == {"nvd", "csection"}
-        assert set(detail["coverage"]["nvd"].keys()) == {"percentage", "achieved_count"}
+        assert set(detail["coverage"]["nvd"].keys()) == {"percentage", "achieved_count", "total_count"}
         assert set(detail["attachment"].keys()) == {"nvd", "csection"}
         for split_key in ("nvd", "csection"):
             assert set(detail["attachment"][split_key].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
@@ -157,18 +159,19 @@ def test_outborn_schema(client):
     body = client.get("/api/dashboard/outborn").json()
     assert set(body.keys()) == {
         "total_cases", "overall_avg_kmc", "nvd", "csection", "outborn_definition_note",
+        "period_start", "period_end",
     }
     for unit in ("nvd", "csection"):
         assert set(body[unit].keys()) == {
             "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "coverage", "attachment",
         }
         assert set(body[unit]["attachment"].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
-        assert set(body[unit]["coverage"].keys()) == {"percentage", "achieved_count"}
+        assert set(body[unit]["coverage"].keys()) == {"percentage", "achieved_count", "total_count"}
 
 
 def test_discharge_schema(client):
     body = client.get("/api/dashboard/discharge").json()
-    assert set(body.keys()) == {"summary", "inborn", "outborn"}
+    assert set(body.keys()) == {"summary", "inborn", "outborn", "period_start", "period_end"}
     assert set(body["summary"].keys()) == {
         "discharged", "referred", "lama", "death", "still_admitted",
     }

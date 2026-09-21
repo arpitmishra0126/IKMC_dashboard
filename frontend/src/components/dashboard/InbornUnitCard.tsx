@@ -48,8 +48,8 @@ export function InbornUnitCard({ title, description, unit, icon: Icon }: InbornU
     },
     {
       label: "iKMC coverage",
-      nvd: `${unit.coverage.nvd.percentage}% (${formatNumber(unit.coverage.nvd.achieved_count)}/${formatNumber(unit.delivery.nvd)})`,
-      csection: `${unit.coverage.csection.percentage}% (${formatNumber(unit.coverage.csection.achieved_count)}/${formatNumber(unit.delivery.csection)})`,
+      nvd: `${unit.coverage.nvd.percentage}% (${formatNumber(unit.coverage.nvd.achieved_count)}/${formatNumber(unit.coverage.nvd.total_count)})`,
+      csection: `${unit.coverage.csection.percentage}% (${formatNumber(unit.coverage.csection.achieved_count)}/${formatNumber(unit.coverage.csection.total_count)})`,
     },
     {
       label: "Achieved count",

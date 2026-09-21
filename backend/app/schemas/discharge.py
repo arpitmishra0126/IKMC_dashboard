@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.schemas.common import DischargeBreakdown
@@ -15,3 +17,5 @@ class DischargeResponse(BaseModel):
     summary: DischargeSummary
     inborn: DischargeBreakdown
     outborn: DischargeBreakdown
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None

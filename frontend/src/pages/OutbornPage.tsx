@@ -1,4 +1,5 @@
-import { Ambulance, Scissors, TrendingUp } from "lucide-react"
+import { Ambulance, CalendarRange, Scissors, TrendingUp } from "lucide-react"
+import { useState } from "react"
 
 import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "@/components/dashboard/AttachmentAgeCard"
 import { ErrorState } from "@/components/common/ErrorState"
@@ -8,15 +9,29 @@ import {
   OutbornIndicatorTable,
   OutbornIndicatorTableSkeleton,
 } from "@/components/dashboard/OutbornIndicatorTable"
+import { PeriodFilter } from "@/components/dashboard/PeriodFilter"
 import { Section } from "@/components/layout/Section"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useOutborn } from "@/hooks/useOutborn"
+import { formatDateTime } from "@/lib/format"
+import type { OverviewDateRange, OverviewPeriod } from "@/types/overview"
 
 /**
  * Reproduces pages/3_Outborn.py via GET /api/dashboard/outborn: overall
  * totals/avg KMC, then NVD and C-Section each as their own card.
+ *
+ * The Reporting Period selector (same PeriodFilter component/behavior as
+ * Overview, independent state - not shared) narrows total_cases/
+ * overall_avg_kmc/case_count/ssc_under_2h/avg_kmc/exclusive_bf by the
+ * STUDY ENROLLMENT DATE (mother.enr_dof). iKMC coverage/Achieved count
+ * and Attachment Age are NOT period-filtered - they keep showing the
+ * existing, unfiltered figures regardless of the selected period, per
+ * explicit instruction.
  */
 export function OutbornPage() {
-  const { data, error, isInitialLoading, refetch } = useOutborn()
+  const [period, setPeriod] = useState<OverviewPeriod>("all")
+  const [customRange, setCustomRange] = useState<OverviewDateRange | undefined>(undefined)
+  const { data, error, isInitialLoading, refetch } = useOutborn(period, customRange)
 
   if (error) {
     return (
@@ -31,7 +46,27 @@ export function OutbornPage() {
       <Section
         title="Outborn Cohort Compliance Registry"
         description="Detailed metrics, SSC & KMC progress indexes for outborn admissions."
+        actions={
+          <PeriodFilter
+            value={period}
+            onChange={(nextPeriod) => {
+              setPeriod(nextPeriod)
+              setCustomRange(undefined)
+            }}
+            isCustomActive={customRange !== undefined}
+            onApplyCustomRange={setCustomRange}
+          />
+        }
       >
+        {isInitialLoading || !data ? (
+          <Skeleton className="h-4 w-56" />
+        ) : (
+          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+            <CalendarRange className="size-3.5 shrink-0" aria-hidden="true" />
+            Showing data: {formatDateTime(data.period_start)} – {formatDateTime(data.period_end)}
+          </p>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {isInitialLoading || !data ? (
             <>

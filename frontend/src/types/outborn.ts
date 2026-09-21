@@ -24,4 +24,6 @@ export interface OutbornResponse {
   nvd: OutbornDeliveryUnit
   csection: OutbornDeliveryUnit
   outborn_definition_note: string
+  period_start: string | null
+  period_end: string | null
 }

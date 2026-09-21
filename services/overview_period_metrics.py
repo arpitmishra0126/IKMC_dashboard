@@ -170,6 +170,11 @@ class _Group:
     whichever definition that group's real indicators.py functions use."""
 
     def __init__(self, master: pd.DataFrame, enrollment: pd.DataFrame, *, strict_nvd_for_bf: bool):
+        # Unsplit reference (pre NVD/C-section split) - only used by the
+        # Inborn/Outborn per-unit period stats below, for their own
+        # total_cases/overall avg_kmc figures. Storing it changes no
+        # existing attribute or method's behavior.
+        self.master = master
         self.master_nvd = master[master[_DELIVERY_MODE].isin([11, 12])]
         self.master_csection = master[master[_DELIVERY_MODE] == 13]
 
@@ -209,14 +214,17 @@ class _Group:
         return _attachment_stats(df, initiation)
 
 
-def get_overview_total_cases(start=None, end=None) -> dict:
-    """
-    Period-aware Total Cases summary for the Overview page: unique baby
-    count plus Delivery Type / SSC<2h / Avg KMC / Exclusive BF /
-    Attachment age, combined across Inborn (MSNCU + PNC) + Outborn,
-    split NVD vs. C-Section. See module docstring for exactly which
-    services.indicators.py functions each piece mirrors.
-    """
+def _build_groups(start=None, end=None) -> tuple["_Group", "_Group", "_Group"]:
+    """Builds the (MSNCU, PNC, Outborn) _Group triple shared by every
+    period-aware calculation in this module (Overview's Total Cases
+    summary and Attachment Age case list, and the Inborn/Outborn per-unit
+    period stats below) - same enr_dof-filtered eligibility, same masks,
+    mirroring get_msncu_master_df()/get_pnc_master_df()/get_outborn_df()
+    and their enrollment-side equivalents exactly (see module docstring).
+    Extracted from what was previously duplicated inline in
+    get_overview_total_cases() and get_overview_attachment_cases() -
+    verified to produce byte-identical output before and after this
+    extraction."""
     data = load_all_data()
     mother = data["mother"]
     eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
@@ -229,12 +237,6 @@ def get_overview_total_cases(start=None, end=None) -> dict:
         daily, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["daily_babyid"], how="left"
     )
 
-    # ---- Total Cases: get_inborn_count() + get_outborn_count() ----
-    inborn_elig = eligibility[eligibility["scr_pob"] == 11]
-    outborn_master_all = master[master["scr_pob"].isin([12, 13, 14])]
-    total_cases = int(inborn_elig["scr_babyid"].nunique()) + int(outborn_master_all["dmf_babyid"].nunique())
-
-    # ---- Three groups, mirroring get_msncu_master_df / get_pnc_master_df / get_outborn_df ----
     # (master requires BOTH scr_pob==11 AND scr_sncu_sick==X)
     msncu_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 11)
     pnc_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 12)
@@ -252,6 +254,32 @@ def get_overview_total_cases(start=None, end=None) -> dict:
     pnc = _Group(master[pnc_mask_master], enrollment[pnc_mask_enr], strict_nvd_for_bf=True)
     outborn = _Group(master[outborn_mask_master], enrollment[outborn_mask_enr], strict_nvd_for_bf=False)
 
+    return msncu, pnc, outborn
+
+
+def get_overview_total_cases(start=None, end=None) -> dict:
+    """
+    Period-aware Total Cases summary for the Overview page: unique baby
+    count plus Delivery Type / SSC<2h / Avg KMC / Exclusive BF /
+    Attachment age, combined across Inborn (MSNCU + PNC) + Outborn,
+    split NVD vs. C-Section. See module docstring for exactly which
+    services.indicators.py functions each piece mirrors.
+    """
+    data = load_all_data()
+    mother = data["mother"]
+    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
+    daily = data["daily"]
+
+    master = eligibility.merge(
+        mother, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["mother_babyid"], how="left"
+    ).merge(daily, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["daily_babyid"], how="left")
+
+    # ---- Total Cases: get_inborn_count() + get_outborn_count() ----
+    inborn_elig = eligibility[eligibility["scr_pob"] == 11]
+    outborn_master_all = master[master["scr_pob"].isin([12, 13, 14])]
+    total_cases = int(inborn_elig["scr_babyid"].nunique()) + int(outborn_master_all["dmf_babyid"].nunique())
+
+    msncu, pnc, outborn = _build_groups(start, end)
     groups = [msncu, pnc, outborn]
 
     # DCT initiation timestamps aren't themselves period-filtered - only
@@ -369,33 +397,11 @@ def get_overview_attachment_cases(section: str, start=None, end=None) -> pd.Data
     """Per-case audit rows for the Overview page's combined Attachment Age
     (MSNCU + PNC + Outborn, `section` = 'nvd' or 'csection'), matching
     get_overview_total_cases()'s exact group construction (same enr_dof
-    period filter, same masks) - duplicated here rather than refactoring
-    that function, so its tested behavior can't be affected by this
-    addition."""
+    period filter, same masks) via the shared _build_groups() helper."""
     data = load_all_data()
-    mother = data["mother"]
-    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
     daily = data["daily"]
 
-    enrollment = eligibility.merge(
-        mother, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["mother_babyid"], how="left"
-    )
-    master = enrollment.merge(
-        daily, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["daily_babyid"], how="left"
-    )
-
-    msncu_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 11)
-    pnc_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 12)
-    outborn_mask_master = master["scr_pob"].isin([12, 13, 14])
-
-    msncu_mask_enr = enrollment["scr_sncu_sick"] == 11
-    pnc_mask_enr = enrollment["scr_sncu_sick"] == 12
-    outborn_mask_enr = enrollment["scr_pob"].isin([12, 13, 14])
-
-    msncu = _Group(master[msncu_mask_master], enrollment[msncu_mask_enr], strict_nvd_for_bf=True)
-    pnc = _Group(master[pnc_mask_master], enrollment[pnc_mask_enr], strict_nvd_for_bf=True)
-    outborn = _Group(master[outborn_mask_master], enrollment[outborn_mask_enr], strict_nvd_for_bf=False)
-
+    msncu, pnc, outborn = _build_groups(start, end)
     initiation_records = _earliest_initiation_records(daily)
 
     frames = []
@@ -404,3 +410,63 @@ def get_overview_attachment_cases(section: str, start=None, end=None) -> pd.Data
         frames.append(_attachment_case_records(group_df, initiation_records))
 
     return pd.concat(frames, ignore_index=True)
+
+
+# ==================================================
+# INBORN / OUTBORN - PERIOD-AWARE PER-UNIT STATS
+# ==================================================
+# Additive - inborn_service.py/outborn_service.py's existing (unfiltered)
+# calls to get_{msncu,pnc,outborn}_*() are untouched; these are separate,
+# new functions used only when a Reporting Period is applied. Reuses the
+# exact same per-group formulas as get_overview_total_cases() (same
+# _Group methods, same _build_groups() construction), just kept PER UNIT
+# instead of combined across MSNCU+PNC+Outborn - matching what the Inborn/
+# Outborn pages already show per unit. Coverage (iKMC coverage/Achieved
+# count) and Attachment Age are deliberately NOT included here - the task
+# that added this explicitly excludes them from period-filtering, so they
+# stay on the existing, unfiltered get_*_coverage()/*_achieved_count()/
+# *_attachment_stats() indicator functions regardless of the selected
+# period.
+
+def get_inborn_unit_period_stats(prefix: str, start=None, end=None) -> dict:
+    """prefix = 'msncu' or 'pnc'. Period-aware total_cases/avg_kmc/
+    delivery/ssc_under_2h/avg_kmc_by_delivery/exclusive_bf for one Inborn
+    unit - same formulas as get_{prefix}_total_cases()/get_{prefix}_avg_kmc()/
+    get_{prefix}_{nvd,csection}_count()/... in services/indicators.py."""
+    msncu, pnc, _outborn = _build_groups(start, end)
+    group = msncu if prefix == "msncu" else pnc
+
+    return {
+        "avg_kmc": _avg_kmc_hours(group.master),
+        "total_cases": int(group.master["dmf_babyid"].nunique()),
+        "delivery": {"nvd": group.delivery_count("nvd"), "csection": group.delivery_count("csection")},
+        "ssc_under_2h": {"nvd": group.ssc_under_2h("nvd"), "csection": group.ssc_under_2h("csection")},
+        "avg_kmc_by_delivery": {
+            "nvd": _avg_kmc_hours(group.avg_kmc_rows("nvd")),
+            "csection": _avg_kmc_hours(group.avg_kmc_rows("csection")),
+        },
+        "exclusive_bf": {"nvd": group.bf_count("nvd"), "csection": group.bf_count("csection")},
+    }
+
+
+def get_outborn_period_stats(start=None, end=None) -> dict:
+    """Period-aware total_cases/overall_avg_kmc, and per-delivery-mode
+    case_count/ssc_under_2h/avg_kmc/exclusive_bf, for the Outborn page -
+    same formulas as get_outborn_total_cases()/get_outborn_avg_kmc()/
+    get_outborn_{nvd,csection}_count()/... in services/indicators.py."""
+    _msncu, _pnc, outborn = _build_groups(start, end)
+
+    def unit(section: str) -> dict:
+        return {
+            "case_count": outborn.delivery_count(section),
+            "ssc_under_2h": outborn.ssc_under_2h(section),
+            "avg_kmc": _avg_kmc_hours(outborn.avg_kmc_rows(section)),
+            "exclusive_bf": outborn.bf_count(section),
+        }
+
+    return {
+        "total_cases": int(outborn.master["dmf_babyid"].nunique()),
+        "overall_avg_kmc": _avg_kmc_hours(outborn.master),
+        "nvd": unit("nvd"),
+        "csection": unit("csection"),
+    }

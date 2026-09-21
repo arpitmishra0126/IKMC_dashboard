@@ -1318,45 +1318,45 @@ def get_discharge_master_df(start=None, end=None):
         how="left"
     )
 
-def get_inborn_discharge_df():
+def get_inborn_discharge_df(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return df[df["scr_pob"] == 11]
 
 
-def get_outborn_discharge_df():
+def get_outborn_discharge_df(start=None, end=None):
 
-    df = get_discharge_master_df()
+    df = get_discharge_master_df(start, end)
 
     return df[
         df["scr_pob"].isin([12, 13, 14])
     ]
 
-def get_inborn_nvd_discharge_df():
+def get_inborn_nvd_discharge_df(start=None, end=None):
 
-    df = get_inborn_discharge_df()
+    df = get_inborn_discharge_df(start, end)
 
     return df[df["scr_del_mode"].isin([11, 12])]
 
 
-def get_inborn_csection_discharge_df():
+def get_inborn_csection_discharge_df(start=None, end=None):
 
-    df = get_inborn_discharge_df()
+    df = get_inborn_discharge_df(start, end)
 
     return df[df["scr_del_mode"] == 13]
 
 
-def get_outborn_nvd_discharge_df():
+def get_outborn_nvd_discharge_df(start=None, end=None):
 
-    df = get_outborn_discharge_df()
+    df = get_outborn_discharge_df(start, end)
 
     return df[df["scr_del_mode"].isin([11, 12])]
 
 
-def get_outborn_csection_discharge_df():
+def get_outborn_csection_discharge_df(start=None, end=None):
 
-    df = get_outborn_discharge_df()
+    df = get_outborn_discharge_df(start, end)
 
     return df[df["scr_del_mode"] == 13]
 
@@ -1416,9 +1416,9 @@ def get_total_death(start=None, end=None):
 # INBORN NVD OUTCOMES
 # ==================================================
 
-def get_inborn_nvd_discharged():
+def get_inborn_nvd_discharged(start=None, end=None):
 
-    df = get_inborn_nvd_discharge_df()
+    df = get_inborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1427,9 +1427,9 @@ def get_inborn_nvd_discharged():
         .nunique()
     )
 
-def get_inborn_nvd_referred():
+def get_inborn_nvd_referred(start=None, end=None):
 
-    df = get_inborn_nvd_discharge_df()
+    df = get_inborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1438,9 +1438,9 @@ def get_inborn_nvd_referred():
         .nunique()
     )
 
-def get_inborn_nvd_lama():
+def get_inborn_nvd_lama(start=None, end=None):
 
-    df = get_inborn_nvd_discharge_df()
+    df = get_inborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1449,9 +1449,9 @@ def get_inborn_nvd_lama():
         .nunique()
     )
 
-def get_inborn_nvd_death():
+def get_inborn_nvd_death(start=None, end=None):
 
-    df = get_inborn_nvd_discharge_df()
+    df = get_inborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1464,9 +1464,9 @@ def get_inborn_nvd_death():
 # INBORN C-SECTION OUTCOMES
 # ==================================================
 
-def get_inborn_csection_discharged():
+def get_inborn_csection_discharged(start=None, end=None):
 
-    df = get_inborn_csection_discharge_df()
+    df = get_inborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1475,9 +1475,9 @@ def get_inborn_csection_discharged():
         .nunique()
     )
 
-def get_inborn_csection_referred():
+def get_inborn_csection_referred(start=None, end=None):
 
-    df = get_inborn_csection_discharge_df()
+    df = get_inborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1486,9 +1486,9 @@ def get_inborn_csection_referred():
         .nunique()
     )
 
-def get_inborn_csection_lama():
+def get_inborn_csection_lama(start=None, end=None):
 
-    df = get_inborn_csection_discharge_df()
+    df = get_inborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1497,9 +1497,9 @@ def get_inborn_csection_lama():
         .nunique()
     )
 
-def get_inborn_csection_death():
+def get_inborn_csection_death(start=None, end=None):
 
-    df = get_inborn_csection_discharge_df()
+    df = get_inborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1512,9 +1512,9 @@ def get_inborn_csection_death():
 # OUTBORN NVD OUTCOMES
 # ==================================================
 
-def get_outborn_nvd_discharged():
+def get_outborn_nvd_discharged(start=None, end=None):
 
-    df = get_outborn_nvd_discharge_df()
+    df = get_outborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1523,9 +1523,9 @@ def get_outborn_nvd_discharged():
         .nunique()
     )
 
-def get_outborn_nvd_referred():
+def get_outborn_nvd_referred(start=None, end=None):
 
-    df = get_outborn_nvd_discharge_df()
+    df = get_outborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1534,9 +1534,9 @@ def get_outborn_nvd_referred():
         .nunique()
     )
 
-def get_outborn_nvd_lama():
+def get_outborn_nvd_lama(start=None, end=None):
 
-    df = get_outborn_nvd_discharge_df()
+    df = get_outborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1545,9 +1545,9 @@ def get_outborn_nvd_lama():
         .nunique()
     )
 
-def get_outborn_nvd_death():
+def get_outborn_nvd_death(start=None, end=None):
 
-    df = get_outborn_nvd_discharge_df()
+    df = get_outborn_nvd_discharge_df(start, end)
 
     return (
         df[
@@ -1560,9 +1560,9 @@ def get_outborn_nvd_death():
 # OUTBORN C-SECTION OUTCOMES
 # ==================================================
 
-def get_outborn_csection_discharged():
+def get_outborn_csection_discharged(start=None, end=None):
 
-    df = get_outborn_csection_discharge_df()
+    df = get_outborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1571,9 +1571,9 @@ def get_outborn_csection_discharged():
         .nunique()
     )
 
-def get_outborn_csection_referred():
+def get_outborn_csection_referred(start=None, end=None):
 
-    df = get_outborn_csection_discharge_df()
+    df = get_outborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1582,9 +1582,9 @@ def get_outborn_csection_referred():
         .nunique()
     )
 
-def get_outborn_csection_lama():
+def get_outborn_csection_lama(start=None, end=None):
 
-    df = get_outborn_csection_discharge_df()
+    df = get_outborn_csection_discharge_df(start, end)
 
     return (
         df[
@@ -1593,9 +1593,9 @@ def get_outborn_csection_lama():
         .nunique()
     )
 
-def get_outborn_csection_death():
+def get_outborn_csection_death(start=None, end=None):
 
-    df = get_outborn_csection_discharge_df()
+    df = get_outborn_csection_discharge_df(start, end)
 
     return (
         df[

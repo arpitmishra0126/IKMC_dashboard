@@ -42,18 +42,30 @@ def get_data_quality() -> DataQualityResponse:
 
 
 @router.get("/inborn", response_model=InbornResponse)
-def get_inborn() -> InbornResponse:
-    return InbornResponse(**inborn_service.get_inborn_dashboard())
+def get_inborn(
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+) -> InbornResponse:
+    return InbornResponse(**inborn_service.get_inborn_dashboard(period, from_date, to_date))
 
 
 @router.get("/outborn", response_model=OutbornResponse)
-def get_outborn() -> OutbornResponse:
-    return OutbornResponse(**outborn_service.get_outborn_dashboard())
+def get_outborn(
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+) -> OutbornResponse:
+    return OutbornResponse(**outborn_service.get_outborn_dashboard(period, from_date, to_date))
 
 
 @router.get("/discharge", response_model=DischargeResponse)
-def get_discharge() -> DischargeResponse:
-    return DischargeResponse(**discharge_service.get_discharge_dashboard())
+def get_discharge(
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+) -> DischargeResponse:
+    return DischargeResponse(**discharge_service.get_discharge_dashboard(period, from_date, to_date))
 
 
 @router.get("/attachment-cases", response_model=AttachmentCasesResponse)

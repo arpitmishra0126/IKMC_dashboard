@@ -27,4 +27,8 @@ export interface InbornResponse {
   overall_avg_kmc_hours: number
   msncu: InbornUnitDetail
   pnc: InbornUnitDetail
+  /** ISO date strings - resolved Reporting Period boundaries (STUDY
+   * ENROLLMENT DATE basis), same semantics as OverviewResponse's. */
+  period_start: string | null
+  period_end: string | null
 }

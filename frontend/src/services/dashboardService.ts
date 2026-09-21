@@ -16,6 +16,21 @@ import type { OutbornResponse } from "@/types/outborn"
 import type { OverviewDateRange, OverviewPeriod, OverviewResponse } from "@/types/overview"
 import type { ValidationDetailResponse } from "@/types/validation"
 
+/** Shared by every period-aware endpoint (Overview, Inborn, Outborn,
+ * Discharge): a custom From/To range takes priority over the preset
+ * `period` when both are somehow present, matching the backend's
+ * _resolve_range() precedence exactly. */
+function periodQueryParams(period: OverviewPeriod, customRange?: OverviewDateRange): URLSearchParams {
+  const params = new URLSearchParams()
+  if (customRange) {
+    params.set("from_date", customRange.from)
+    params.set("to_date", customRange.to)
+  } else if (period !== "all") {
+    params.set("period", period)
+  }
+  return params
+}
+
 export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return apiGet<HealthResponse>("/api/health", signal)
 }
@@ -33,12 +48,8 @@ export function getOverview(
   customRange?: OverviewDateRange,
   signal?: AbortSignal
 ): Promise<OverviewResponse> {
-  if (customRange) {
-    const params = new URLSearchParams({ from_date: customRange.from, to_date: customRange.to })
-    return apiGet<OverviewResponse>(`/api/dashboard/overview?${params.toString()}`, signal)
-  }
-  const query = period === "all" ? "" : `?period=${period}`
-  return apiGet<OverviewResponse>(`/api/dashboard/overview${query}`, signal)
+  const query = periodQueryParams(period, customRange).toString()
+  return apiGet<OverviewResponse>(`/api/dashboard/overview${query ? `?${query}` : ""}`, signal)
 }
 
 export function getCohorts(signal?: AbortSignal): Promise<CohortsResponse> {
@@ -49,16 +60,31 @@ export function getDataQuality(signal?: AbortSignal): Promise<DataQualityRespons
   return apiGet<DataQualityResponse>("/api/dashboard/data-quality", signal)
 }
 
-export function getInborn(signal?: AbortSignal): Promise<InbornResponse> {
-  return apiGet<InbornResponse>("/api/dashboard/inborn", signal)
+export function getInborn(
+  period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
+  signal?: AbortSignal
+): Promise<InbornResponse> {
+  const query = periodQueryParams(period, customRange).toString()
+  return apiGet<InbornResponse>(`/api/dashboard/inborn${query ? `?${query}` : ""}`, signal)
 }
 
-export function getOutborn(signal?: AbortSignal): Promise<OutbornResponse> {
-  return apiGet<OutbornResponse>("/api/dashboard/outborn", signal)
+export function getOutborn(
+  period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
+  signal?: AbortSignal
+): Promise<OutbornResponse> {
+  const query = periodQueryParams(period, customRange).toString()
+  return apiGet<OutbornResponse>(`/api/dashboard/outborn${query ? `?${query}` : ""}`, signal)
 }
 
-export function getDischarge(signal?: AbortSignal): Promise<DischargeResponse> {
-  return apiGet<DischargeResponse>("/api/dashboard/discharge", signal)
+export function getDischarge(
+  period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
+  signal?: AbortSignal
+): Promise<DischargeResponse> {
+  const query = periodQueryParams(period, customRange).toString()
+  return apiGet<DischargeResponse>(`/api/dashboard/discharge${query ? `?${query}` : ""}`, signal)
 }
 
 export function getAttachmentCases(
@@ -67,13 +93,8 @@ export function getAttachmentCases(
   customRange?: OverviewDateRange,
   signal?: AbortSignal
 ): Promise<AttachmentCasesResponse> {
-  const params = new URLSearchParams({ scope })
-  if (customRange) {
-    params.set("from_date", customRange.from)
-    params.set("to_date", customRange.to)
-  } else if (period !== "all") {
-    params.set("period", period)
-  }
+  const params = periodQueryParams(period, customRange)
+  params.set("scope", scope)
   return apiGet<AttachmentCasesResponse>(`/api/dashboard/attachment-cases?${params.toString()}`, signal)
 }
 
