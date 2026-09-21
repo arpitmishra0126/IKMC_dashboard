@@ -1,0 +1,115 @@
+[1mdiff --git a/services/indicators.py b/services/indicators.py[m
+[1mindex b2a7874..33aceb2 100644[m
+[1m--- a/services/indicators.py[m
+[1m+++ b/services/indicators.py[m
+[36m@@ -753,6 +753,110 @@[m [mdef get_inborn_nvd_attachment_stats():[m
+ def get_inborn_csection_attachment_stats():[m
+     return _combine_attachment_stats(get_msncu_csection_attachment_stats(), get_pnc_csection_attachment_stats())[m
+ [m
+[32m+[m
+[32m+[m[32m# ==================================================[m
+[32m+[m[32m# ATTACHMENT AGE - PER-CASE AUDIT RECORDS[m
+[32m+[m[32m# ==================================================[m
+[32m+[m[32m# Additive, read-only audit functions - none of the get_*_attachment_stats()[m
+[32m+[m[32m# functions above are modified, and no displayed Attachment Age value[m
+[32m+[m[32m# changes. These expose the SAME underlying per-baby rows that[m
+[32m+[m[32m# _attachment_stats() already aggregates over (same population, same DCT[m
+[32m+[m[32m# initiation lookup, same birth/minutes computation), just without[m
+[32m+[m[32m# collapsing them into case_count/mean/min/max - for the attachment-age[m
+[32m+[m[32m# audit popover (click a Min/Avg/Max box or the case count to see which[m
+[32m+[m[32m# babies it's drawn from).[m
+[32m+[m
+[32m+[m[32mdef get_earliest_initiation_records():[m
+[32m+[m[32m    """Same DCT candidate-pooling logic as get_earliest_initiation_df()[m
+[32m+[m[32m    (identical filters, identical _initiation_dt per baby - verified by[m
+[32m+[m[32m    the fact this uses the exact same candidate frame), but additionally[m
+[32m+[m[32m    keeps the winning row's `recordid` (the actual DCT/daily form record[m
+[32m+[m[32m    that supplied the earliest qualifying timestamp) and which of the two[m
+[32m+[m[32m    variables it came from, for audit display."""[m
+[32m+[m[32m    daily = get_daily_df()[m
+[32m+[m[32m    daily = daily[daily["dmf_babyid"] != "null"][m
+[32m+[m
+[32m+[m[32m    bf = daily.loc[[m
+[32m+[m[32m        daily["dmf_bf_bentfed_hw"] == 11,[m
+[32m+[m[32m        ["dmf_babyid", "recordid", "dmf_bf_bentfed_hw_dt", "dmf_bf_bentfed_hw_tm"],[m
+[32m+[m[32m    ].rename(columns={"dmf_bf_bentfed_hw_dt": "_dt", "dmf_bf_bentfed_hw_tm": "_tm"})[m
+[32m+[m[32m    bf["_source"] = "dmf_bf_bentfed_hw"[m
+[32m+[m
+[32m+[m[32m    exp = daily.loc[[m
+[32m+[m[32m        daily["dmf_exp_bmilk_hw"] == 11,[m
+[32m+[m[32m        ["dmf_babyid", "recordid", "dmf_exp_bmilk_hw_dt", "dmf_exp_bmilk_hw_tm"],[m
+[32m+[m[32m    ].rename(columns={"dmf_exp_bmilk_hw_dt": "_dt", "dmf_exp_bmilk_hw_tm": "_tm"})[m
+[32m+[m[32m    exp["_source"] = "dmf_exp_bmilk_hw"[m
+[32m+[m
+[32m+[m[32m    candidates = pd.concat([bf, exp], ignore_index=True)[m
+[32m+[m[32m    candidates["_initiation_dt"] = pd.to_datetime([m
+[32m+[m[32m        candidates["_dt"].astype(str) + " " + candidates["_tm"].astype(str), errors="coerce"[m
+[32m+[m[32m    )[m
+[32m+[m[32m    candidates = candidates.dropna(subset=["_initiation_dt"])[m
+[32m+[m
+[32m+[m[32m    winning_idx = candidates.groupby("dmf_babyid")["_initiation_dt"].idxmin()[m
+[32m+[m[32m    winners = candidates.loc[winning_idx, ["dmf_babyid", "recordid", "_initiation_dt", "_source"]][m
+[32m+[m[32m    return winners.rename(columns={"recordid": "dct_recordid"}).reset_index(drop=True)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef _attachment_case_records(df):[m
+[32m+[m[32m    """Per-case audit rows for _attachment_stats(df)'s exact same[m
+[32m+[m[32m    population and calculation (same filters, same merge, same birth/[m
+[32m+[m[32m    minutes formula) - one row per baby with a qualifying DCT initiation[m
+[32m+[m[32m    timestamp (i.e. exactly case_count of them), with columns[m
+[32m+[m[32m    scr_babyid, dct_recordid, _source, _minutes (may be NaN/negative for[m
+[32m+[m[32m    the same reason _attachment_stats() excludes such rows from min/avg/[m
+[32m+[m[32m    max, but not from case_count - see that function's comment)."""[m
+[32m+[m[32m    df = df[df["scr_babyid"] != "null"][m
+[32m+[m[32m    merged = df.merge([m
+[32m+[m[32m        get_earliest_initiation_records(), left_on="scr_babyid", right_on="dmf_babyid", how="inner"[m
+[32m+[m[32m    )[m
+[32m+[m[32m    merged = merged.drop_duplicates(subset=["scr_babyid"]).copy()[m
+[32m+[m
+[32m+[m[32m    birth_dt = pd.to_datetime([m
+[32m+[m[32m        merged["scr_dob"].astype(str) + " " + merged["scr_tob"].astype(str), errors="coerce"[m
+[32m+[m[32m    )[m
+[32m+[m[32m    merged["_minutes"] = (merged["_initiation_dt"] - birth_dt).dt.total_seconds() / 60[m
+[32m+[m
+[32m+[m[32m    return merged[["scr_babyid", "dct_recordid", "_source", "_minutes"]].reset_index(drop=True)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_msncu_nvd_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_msncu_nvd_enrollment_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_msncu_csection_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_msncu_csection_enrollment_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_pnc_nvd_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_pnc_nvd_enrollment_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_pnc_csection_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_pnc_csection_enrollment_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_outborn_nvd_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_outborn_nvd_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_outborn_csection_attachment_cases():[m
+[32m+[m[32m    return _attachment_case_records(get_outborn_csection_df())[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_inborn_nvd_attachment_cases():[m
+[32m+[m[32m    return pd.concat([m
+[32m+[m[32m        [get_msncu_nvd_attachment_cases(), get_pnc_nvd_attachment_cases()], ignore_index=True[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef get_inborn_csection_attachment_cases():[m
+[32m+[m[32m    return pd.concat([m
+[32m+[m[32m        [get_msncu_csection_attachment_cases(), get_pnc_csection_attachment_cases()], ignore_index=True[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m
+ # ==================================================[m
+ # SSC WITHIN 2 HOURS[m
+ # ==================================================[m

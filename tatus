@@ -1,0 +1,18 @@
+warning: in the working copy of 'backend/app/api/dashboard.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/exceptions.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/dashboard/AttachmentAgeCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/dashboard/CohortAttachmentAgeCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/services/dashboardService.ts', LF will be replaced by CRLF the next time Git touches it
+ backend/app/api/dashboard.py                       |  16 [32m+++[m
+ backend/app/core/exceptions.py                     |  10 [32m++[m
+ backend/app/main.py                                |  17 [32m++[m[31m-[m
+ .../src/components/dashboard/AttachmentAgeCard.tsx | 143 [32m+++++++++++++++++++[m[31m--[m
+ .../dashboard/CohortAttachmentAgeCard.tsx          |  38 [32m+++++[m[31m-[m
+ frontend/src/components/dashboard/KpiSection.tsx   |   9 [32m+[m[31m-[m
+ frontend/src/pages/InbornPage.tsx                  |  12 [32m+[m[31m-[m
+ frontend/src/pages/OutbornPage.tsx                 |   2 [32m+[m
+ frontend/src/services/dashboardService.ts          |  17 [32m+++[m
+ services/indicators.py                             | 104 [32m+++++++++++++++[m
+ services/overview_period_metrics.py                |  92 [32m+++++++++++++[m
+ 11 files changed, 438 insertions(+), 22 deletions(-)

@@ -13,6 +13,16 @@ class UnknownValidationCheckError(Exception):
         )
 
 
+class UnknownAttachmentScopeError(Exception):
+    """Raised when /api/dashboard/attachment-cases is called with a `scope`
+    that has no corresponding attachment-cases function."""
+
+    def __init__(self, scope: str, known_scopes: list[str]):
+        self.scope = scope
+        self.known_scopes = known_scopes
+        super().__init__(f"Unknown attachment scope '{scope}'. Known scopes: {known_scopes}")
+
+
 class InvalidDateRangeError(Exception):
     """Raised when the Overview Reporting Period filter's custom
     from_date/to_date query params are invalid (from_date after to_date,

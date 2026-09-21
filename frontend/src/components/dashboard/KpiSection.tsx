@@ -133,7 +133,14 @@ export function KpiSection() {
           {isInitialLoading || !data ? (
             <AttachmentAgeCardSkeleton />
           ) : (
-            <AttachmentAgeCard attachment={data.total_cases_summary.attachment} />
+            <AttachmentAgeCard
+              attachment={data.total_cases_summary.attachment}
+              scopePrefix="overview"
+              contextLabel="Overview"
+              avgIsCombined
+              period={period}
+              customRange={customRange}
+            />
           )}
         </>
       )}

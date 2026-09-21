@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
+from app.schemas.attachment_cases import AttachmentCasesResponse
 from app.schemas.cohorts import CohortsResponse
 from app.schemas.data_quality import DataQualityResponse
 from app.schemas.discharge import DischargeResponse
@@ -9,6 +10,7 @@ from app.schemas.inborn import InbornResponse
 from app.schemas.outborn import OutbornResponse
 from app.schemas.overview import OverviewResponse
 from app.services import (
+    attachment_cases_service,
     cohorts_service,
     data_quality_service,
     discharge_service,
@@ -52,3 +54,17 @@ def get_outborn() -> OutbornResponse:
 @router.get("/discharge", response_model=DischargeResponse)
 def get_discharge() -> DischargeResponse:
     return DischargeResponse(**discharge_service.get_discharge_dashboard())
+
+
+@router.get("/attachment-cases", response_model=AttachmentCasesResponse)
+def get_attachment_cases(
+    scope: str,
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+) -> AttachmentCasesResponse:
+    # UnknownAttachmentScopeError -> 404, InvalidDateRangeError -> 400,
+    # both translated by the exception handlers registered in app.main.
+    return AttachmentCasesResponse(
+        **attachment_cases_service.get_attachment_cases(scope, period, from_date, to_date)
+    )

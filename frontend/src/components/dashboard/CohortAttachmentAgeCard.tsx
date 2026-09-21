@@ -3,6 +3,7 @@ import { Clock, Info } from "lucide-react"
 import { CohortPanel } from "@/components/dashboard/AttachmentAgeCard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import type { AttachmentScope, AttachmentScopePrefix } from "@/types/attachmentCases"
 import type { AttachmentStatSplit } from "@/types/common"
 
 interface CohortAttachmentAgeCardProps {
@@ -10,15 +11,37 @@ interface CohortAttachmentAgeCardProps {
   outborn: AttachmentStatSplit
 }
 
-function CohortGroup({ label, attachment }: { label: string; attachment: AttachmentStatSplit }) {
+function CohortGroup({
+  label,
+  attachment,
+  scopePrefix,
+  avgIsCombined,
+}: {
+  label: string
+  attachment: AttachmentStatSplit
+  scopePrefix: AttachmentScopePrefix
+  avgIsCombined: boolean
+}) {
   return (
     <div>
       <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
         {label}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <CohortPanel label="NVD" stat={attachment.nvd} />
-        <CohortPanel label="C-Section" stat={attachment.csection} />
+        <CohortPanel
+          label="NVD"
+          stat={attachment.nvd}
+          scope={`${scopePrefix}_nvd` as AttachmentScope}
+          contextLabel={`Cohort Summary — ${label}`}
+          avgIsCombined={avgIsCombined}
+        />
+        <CohortPanel
+          label="C-Section"
+          stat={attachment.csection}
+          scope={`${scopePrefix}_csection` as AttachmentScope}
+          contextLabel={`Cohort Summary — ${label}`}
+          avgIsCombined={avgIsCombined}
+        />
       </div>
     </div>
   )
@@ -49,8 +72,13 @@ export function CohortAttachmentAgeCard({ inborn, outborn }: CohortAttachmentAge
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <CohortGroup label="Inborn" attachment={inborn} />
-        <CohortGroup label="Outborn" attachment={outborn} />
+        <CohortGroup label="Inborn" attachment={inborn} scopePrefix="inborn" avgIsCombined />
+        <CohortGroup
+          label="Outborn"
+          attachment={outborn}
+          scopePrefix="outborn"
+          avgIsCombined={false}
+        />
 
         <div className="bg-muted/40 flex items-start gap-2 rounded-md border p-3">
           <Info className="text-muted-foreground mt-0.5 size-3.5 shrink-0" aria-hidden="true" />

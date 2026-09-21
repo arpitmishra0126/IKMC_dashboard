@@ -71,6 +71,8 @@ export function OutbornPage() {
       ) : (
         <AttachmentAgeCard
           attachment={{ nvd: data.nvd.attachment, csection: data.csection.attachment }}
+          scopePrefix="outborn"
+          contextLabel="Outborn"
         />
       )}
     </>

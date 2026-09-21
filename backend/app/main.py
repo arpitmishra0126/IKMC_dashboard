@@ -19,7 +19,12 @@ from fastapi.responses import JSONResponse
 
 from app.api import dashboard, meta, validation
 from app.core.config import settings
-from app.core.exceptions import InvalidDateRangeError, UnknownValidationCheckError, UpstreamDataError
+from app.core.exceptions import (
+    InvalidDateRangeError,
+    UnknownAttachmentScopeError,
+    UnknownValidationCheckError,
+    UpstreamDataError,
+)
 
 app = FastAPI(
     title=settings.app_name,
@@ -51,6 +56,16 @@ async def handle_unknown_validation_check(
             "detail": str(exc),
             "known_checks": exc.known_checks,
         },
+    )
+
+
+@app.exception_handler(UnknownAttachmentScopeError)
+async def handle_unknown_attachment_scope(
+    request: Request, exc: UnknownAttachmentScopeError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc), "known_scopes": exc.known_scopes},
     )
 
 

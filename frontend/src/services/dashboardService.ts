@@ -5,6 +5,7 @@
  * reimplements or reshapes what the backend returns.
  */
 import { apiGet, apiPost } from "@/services/apiClient"
+import type { AttachmentCasesResponse, AttachmentScope } from "@/types/attachmentCases"
 import type { CohortsResponse } from "@/types/cohorts"
 import type { DataQualityResponse } from "@/types/dataQuality"
 import type { DischargeResponse } from "@/types/discharge"
@@ -58,6 +59,22 @@ export function getOutborn(signal?: AbortSignal): Promise<OutbornResponse> {
 
 export function getDischarge(signal?: AbortSignal): Promise<DischargeResponse> {
   return apiGet<DischargeResponse>("/api/dashboard/discharge", signal)
+}
+
+export function getAttachmentCases(
+  scope: AttachmentScope,
+  period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
+  signal?: AbortSignal
+): Promise<AttachmentCasesResponse> {
+  const params = new URLSearchParams({ scope })
+  if (customRange) {
+    params.set("from_date", customRange.from)
+    params.set("to_date", customRange.to)
+  } else if (period !== "all") {
+    params.set("period", period)
+  }
+  return apiGet<AttachmentCasesResponse>(`/api/dashboard/attachment-cases?${params.toString()}`, signal)
 }
 
 export function getValidationDetail(

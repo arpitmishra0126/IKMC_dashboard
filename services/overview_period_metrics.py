@@ -312,3 +312,95 @@ def get_overview_total_cases(start=None, end=None) -> dict:
             "csection": combined_attachment("csection"),
         },
     }
+
+
+# ==================================================
+# ATTACHMENT AGE - PER-CASE AUDIT RECORDS
+# ==================================================
+# Additive, read-only - get_overview_total_cases() above is not modified,
+# no displayed value changes. Mirrors
+# services.indicators.get_earliest_initiation_records()/
+# _attachment_case_records() (same candidate pooling, same population/
+# calculation), for the attachment-age audit popover.
+
+def _earliest_initiation_records(daily: pd.DataFrame) -> pd.DataFrame:
+    """Mirrors services.indicators.get_earliest_initiation_records(): same
+    candidate pooling as _earliest_initiation_df() above, but additionally
+    keeps the winning row's recordid + source variable for audit display."""
+    daily = daily[daily["dmf_babyid"] != "null"]
+
+    bf = daily.loc[
+        daily["dmf_bf_bentfed_hw"] == 11,
+        ["dmf_babyid", "recordid", "dmf_bf_bentfed_hw_dt", "dmf_bf_bentfed_hw_tm"],
+    ].rename(columns={"dmf_bf_bentfed_hw_dt": "_dt", "dmf_bf_bentfed_hw_tm": "_tm"})
+    bf["_source"] = "dmf_bf_bentfed_hw"
+
+    exp = daily.loc[
+        daily["dmf_exp_bmilk_hw"] == 11,
+        ["dmf_babyid", "recordid", "dmf_exp_bmilk_hw_dt", "dmf_exp_bmilk_hw_tm"],
+    ].rename(columns={"dmf_exp_bmilk_hw_dt": "_dt", "dmf_exp_bmilk_hw_tm": "_tm"})
+    exp["_source"] = "dmf_exp_bmilk_hw"
+
+    candidates = pd.concat([bf, exp], ignore_index=True)
+    candidates["_initiation_dt"] = pd.to_datetime(
+        candidates["_dt"].astype(str) + " " + candidates["_tm"].astype(str), errors="coerce"
+    )
+    candidates = candidates.dropna(subset=["_initiation_dt"])
+
+    winning_idx = candidates.groupby("dmf_babyid")["_initiation_dt"].idxmin()
+    winners = candidates.loc[winning_idx, ["dmf_babyid", "recordid", "_initiation_dt", "_source"]]
+    return winners.rename(columns={"recordid": "dct_recordid"}).reset_index(drop=True)
+
+
+def _attachment_case_records(df: pd.DataFrame, initiation_records: pd.DataFrame) -> pd.DataFrame:
+    """Per-case audit rows mirroring _attachment_stats(df, initiation)'s
+    exact same population/calculation - see that function's docstring."""
+    df = df[df["scr_babyid"] != "null"]
+    merged = df.merge(initiation_records, left_on="scr_babyid", right_on="dmf_babyid", how="inner")
+    merged = merged.drop_duplicates(subset=["scr_babyid"]).copy()
+    birth_dt = pd.to_datetime(
+        merged["scr_dob"].astype(str) + " " + merged["scr_tob"].astype(str), errors="coerce"
+    )
+    merged["_minutes"] = (merged["_initiation_dt"] - birth_dt).dt.total_seconds() / 60
+    return merged[["scr_babyid", "dct_recordid", "_source", "_minutes"]].reset_index(drop=True)
+
+
+def get_overview_attachment_cases(section: str, start=None, end=None) -> pd.DataFrame:
+    """Per-case audit rows for the Overview page's combined Attachment Age
+    (MSNCU + PNC + Outborn, `section` = 'nvd' or 'csection'), matching
+    get_overview_total_cases()'s exact group construction (same enr_dof
+    period filter, same masks) - duplicated here rather than refactoring
+    that function, so its tested behavior can't be affected by this
+    addition."""
+    data = load_all_data()
+    mother = data["mother"]
+    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
+    daily = data["daily"]
+
+    enrollment = eligibility.merge(
+        mother, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["mother_babyid"], how="left"
+    )
+    master = enrollment.merge(
+        daily, left_on=FIELD_MAP["eligibility_babyid"], right_on=FIELD_MAP["daily_babyid"], how="left"
+    )
+
+    msncu_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 11)
+    pnc_mask_master = (master["scr_pob"] == 11) & (master["scr_sncu_sick"] == 12)
+    outborn_mask_master = master["scr_pob"].isin([12, 13, 14])
+
+    msncu_mask_enr = enrollment["scr_sncu_sick"] == 11
+    pnc_mask_enr = enrollment["scr_sncu_sick"] == 12
+    outborn_mask_enr = enrollment["scr_pob"].isin([12, 13, 14])
+
+    msncu = _Group(master[msncu_mask_master], enrollment[msncu_mask_enr], strict_nvd_for_bf=True)
+    pnc = _Group(master[pnc_mask_master], enrollment[pnc_mask_enr], strict_nvd_for_bf=True)
+    outborn = _Group(master[outborn_mask_master], enrollment[outborn_mask_enr], strict_nvd_for_bf=False)
+
+    initiation_records = _earliest_initiation_records(daily)
+
+    frames = []
+    for group in (msncu, pnc, outborn):
+        group_df = group.bf_attachment_nvd if section == "nvd" else group.bf_attachment_csection
+        frames.append(_attachment_case_records(group_df, initiation_records))
+
+    return pd.concat(frames, ignore_index=True)

@@ -57,7 +57,11 @@ export function InbornPage() {
               unit={data.msncu}
               icon={Stethoscope}
             />
-            <AttachmentAgeCard attachment={data.msncu.attachment} />
+            <AttachmentAgeCard
+              attachment={data.msncu.attachment}
+              scopePrefix="msncu"
+              contextLabel="MSNCU (Inborn)"
+            />
           </>
         )}
       </Section>
@@ -76,7 +80,11 @@ export function InbornPage() {
               unit={data.pnc}
               icon={ShieldPlus}
             />
-            <AttachmentAgeCard attachment={data.pnc.attachment} />
+            <AttachmentAgeCard
+              attachment={data.pnc.attachment}
+              scopePrefix="pnc"
+              contextLabel="PNC (Inborn)"
+            />
           </>
         )}
       </Section>

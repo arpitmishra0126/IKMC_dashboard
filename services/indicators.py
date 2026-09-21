@@ -753,6 +753,110 @@ def get_inborn_nvd_attachment_stats():
 def get_inborn_csection_attachment_stats():
     return _combine_attachment_stats(get_msncu_csection_attachment_stats(), get_pnc_csection_attachment_stats())
 
+
+# ==================================================
+# ATTACHMENT AGE - PER-CASE AUDIT RECORDS
+# ==================================================
+# Additive, read-only audit functions - none of the get_*_attachment_stats()
+# functions above are modified, and no displayed Attachment Age value
+# changes. These expose the SAME underlying per-baby rows that
+# _attachment_stats() already aggregates over (same population, same DCT
+# initiation lookup, same birth/minutes computation), just without
+# collapsing them into case_count/mean/min/max - for the attachment-age
+# audit popover (click a Min/Avg/Max box or the case count to see which
+# babies it's drawn from).
+
+def get_earliest_initiation_records():
+    """Same DCT candidate-pooling logic as get_earliest_initiation_df()
+    (identical filters, identical _initiation_dt per baby - verified by
+    the fact this uses the exact same candidate frame), but additionally
+    keeps the winning row's `recordid` (the actual DCT/daily form record
+    that supplied the earliest qualifying timestamp) and which of the two
+    variables it came from, for audit display."""
+    daily = get_daily_df()
+    daily = daily[daily["dmf_babyid"] != "null"]
+
+    bf = daily.loc[
+        daily["dmf_bf_bentfed_hw"] == 11,
+        ["dmf_babyid", "recordid", "dmf_bf_bentfed_hw_dt", "dmf_bf_bentfed_hw_tm"],
+    ].rename(columns={"dmf_bf_bentfed_hw_dt": "_dt", "dmf_bf_bentfed_hw_tm": "_tm"})
+    bf["_source"] = "dmf_bf_bentfed_hw"
+
+    exp = daily.loc[
+        daily["dmf_exp_bmilk_hw"] == 11,
+        ["dmf_babyid", "recordid", "dmf_exp_bmilk_hw_dt", "dmf_exp_bmilk_hw_tm"],
+    ].rename(columns={"dmf_exp_bmilk_hw_dt": "_dt", "dmf_exp_bmilk_hw_tm": "_tm"})
+    exp["_source"] = "dmf_exp_bmilk_hw"
+
+    candidates = pd.concat([bf, exp], ignore_index=True)
+    candidates["_initiation_dt"] = pd.to_datetime(
+        candidates["_dt"].astype(str) + " " + candidates["_tm"].astype(str), errors="coerce"
+    )
+    candidates = candidates.dropna(subset=["_initiation_dt"])
+
+    winning_idx = candidates.groupby("dmf_babyid")["_initiation_dt"].idxmin()
+    winners = candidates.loc[winning_idx, ["dmf_babyid", "recordid", "_initiation_dt", "_source"]]
+    return winners.rename(columns={"recordid": "dct_recordid"}).reset_index(drop=True)
+
+
+def _attachment_case_records(df):
+    """Per-case audit rows for _attachment_stats(df)'s exact same
+    population and calculation (same filters, same merge, same birth/
+    minutes formula) - one row per baby with a qualifying DCT initiation
+    timestamp (i.e. exactly case_count of them), with columns
+    scr_babyid, dct_recordid, _source, _minutes (may be NaN/negative for
+    the same reason _attachment_stats() excludes such rows from min/avg/
+    max, but not from case_count - see that function's comment)."""
+    df = df[df["scr_babyid"] != "null"]
+    merged = df.merge(
+        get_earliest_initiation_records(), left_on="scr_babyid", right_on="dmf_babyid", how="inner"
+    )
+    merged = merged.drop_duplicates(subset=["scr_babyid"]).copy()
+
+    birth_dt = pd.to_datetime(
+        merged["scr_dob"].astype(str) + " " + merged["scr_tob"].astype(str), errors="coerce"
+    )
+    merged["_minutes"] = (merged["_initiation_dt"] - birth_dt).dt.total_seconds() / 60
+
+    return merged[["scr_babyid", "dct_recordid", "_source", "_minutes"]].reset_index(drop=True)
+
+
+def get_msncu_nvd_attachment_cases():
+    return _attachment_case_records(get_msncu_nvd_enrollment_df())
+
+
+def get_msncu_csection_attachment_cases():
+    return _attachment_case_records(get_msncu_csection_enrollment_df())
+
+
+def get_pnc_nvd_attachment_cases():
+    return _attachment_case_records(get_pnc_nvd_enrollment_df())
+
+
+def get_pnc_csection_attachment_cases():
+    return _attachment_case_records(get_pnc_csection_enrollment_df())
+
+
+def get_outborn_nvd_attachment_cases():
+    return _attachment_case_records(get_outborn_nvd_df())
+
+
+def get_outborn_csection_attachment_cases():
+    return _attachment_case_records(get_outborn_csection_df())
+
+
+def get_inborn_nvd_attachment_cases():
+    return pd.concat(
+        [get_msncu_nvd_attachment_cases(), get_pnc_nvd_attachment_cases()], ignore_index=True
+    )
+
+
+def get_inborn_csection_attachment_cases():
+    return pd.concat(
+        [get_msncu_csection_attachment_cases(), get_pnc_csection_attachment_cases()], ignore_index=True
+    )
+
+
 # ==================================================
 # SSC WITHIN 2 HOURS
 # ==================================================
