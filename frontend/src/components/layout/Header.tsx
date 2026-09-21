@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Activity, CheckCircle2, RefreshCw } from "lucide-react"
+import { CheckCircle2, RefreshCw } from "lucide-react"
 
 import { ApiStatusIndicator } from "@/components/layout/ApiStatusIndicator"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
@@ -43,22 +43,21 @@ export function Header({ onDataRefreshed }: HeaderProps) {
   }
 
   return (
-    <header className="border-border/70 flex flex-col gap-5 border-b pb-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <span className="bg-primary/10 text-primary ring-primary/10 mt-0.5 hidden rounded-xl p-2.5 ring-1 sm:flex">
-            <Activity className="size-6" aria-hidden="true" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              iKMC Monitoring System
-            </h1>
-            <p className="text-muted-foreground mt-1.5 max-w-2xl text-sm leading-relaxed">
-              Facility-wide monitoring of SSC, KMC, breastfeeding compliance, cohort
-              performance, and discharge outcomes.
-            </p>
-          </div>
-        </div>
+    <header className="flex flex-col gap-5">
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          iKMC Monitoring System
+        </h1>
+        <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
+          Facility-wide monitoring of SSC, KMC, breastfeeding compliance, cohort performance,
+          and discharge outcomes.
+        </p>
+      </div>
+
+      <div className="border-border/70 border-b" />
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <SyncMetadataDisplay />
 
         <div className="flex items-center gap-2">
           <ApiStatusIndicator />
@@ -82,8 +81,6 @@ export function Header({ onDataRefreshed }: HeaderProps) {
           </Button>
         </div>
       </div>
-
-      <SyncMetadataDisplay />
 
       {refreshErrorMessage ? (
         <p role="alert" className="text-destructive text-sm">
