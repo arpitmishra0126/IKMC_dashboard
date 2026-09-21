@@ -4,6 +4,10 @@ import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "@/components/dashb
 import { ErrorState } from "@/components/common/ErrorState"
 import { KpiCard, KpiCardSkeleton } from "@/components/dashboard/KpiCard"
 import { OutbornDeliveryCard, OutbornDeliveryCardSkeleton } from "@/components/dashboard/OutbornDeliveryCard"
+import {
+  OutbornIndicatorTable,
+  OutbornIndicatorTableSkeleton,
+} from "@/components/dashboard/OutbornIndicatorTable"
 import { Section } from "@/components/layout/Section"
 import { useOutborn } from "@/hooks/useOutborn"
 
@@ -49,6 +53,12 @@ export function OutbornPage() {
           <p className="text-muted-foreground text-[11px] italic">{data.outborn_definition_note}</p>
         ) : null}
       </Section>
+
+      {isInitialLoading || !data ? (
+        <OutbornIndicatorTableSkeleton />
+      ) : (
+        <OutbornIndicatorTable data={data} icon={Ambulance} />
+      )}
 
       <Section title="NVD" description="Normal Vaginal Delivery">
         {isInitialLoading || !data ? (

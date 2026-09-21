@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.common import AttachmentStat
+from app.schemas.common import AttachmentStat, CoverageDetail
 
 
 class OutbornDeliveryUnit(BaseModel):
@@ -8,6 +8,7 @@ class OutbornDeliveryUnit(BaseModel):
     ssc_under_2h: int
     avg_kmc: float
     exclusive_bf: int
+    coverage: CoverageDetail
     attachment: AttachmentStat
 
 

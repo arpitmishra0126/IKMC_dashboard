@@ -101,6 +101,8 @@ def _outborn_unit_map(prefix: str) -> dict:
         "ssc_under_2h": f"get_{prefix}_ssc_under_2h_count",
         "avg_kmc": f"get_{prefix}_avg_kmc",
         "exclusive_bf": f"get_{prefix}_bf_count",
+        "coverage.percentage": f"get_{prefix}_coverage",
+        "coverage.achieved_count": f"get_{prefix}_achieved_count",
         # attachment is now {minutes, case_count}, verified separately.
     }
 

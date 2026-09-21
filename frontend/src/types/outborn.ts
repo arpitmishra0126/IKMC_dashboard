@@ -7,13 +7,14 @@
  * differs from KPI_FORMULA_DEFINITIONS.txt (scr_pob == 12 only) - see
  * docs/MIGRATION_DECISIONS.md #6. Shown as-is, not reconciled here.
  */
-import type { AttachmentStat } from "@/types/common"
+import type { AttachmentStat, CoverageDetail } from "@/types/common"
 
 export interface OutbornDeliveryUnit {
   case_count: number
   ssc_under_2h: number
   avg_kmc: number
   exclusive_bf: number
+  coverage: CoverageDetail
   attachment: AttachmentStat
 }
 

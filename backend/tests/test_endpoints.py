@@ -160,9 +160,10 @@ def test_outborn_schema(client):
     }
     for unit in ("nvd", "csection"):
         assert set(body[unit].keys()) == {
-            "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "attachment",
+            "case_count", "ssc_under_2h", "avg_kmc", "exclusive_bf", "coverage", "attachment",
         }
         assert set(body[unit]["attachment"].keys()) == {"minutes", "min_minutes", "max_minutes", "case_count"}
+        assert set(body[unit]["coverage"].keys()) == {"percentage", "achieved_count"}
 
 
 def test_discharge_schema(client):

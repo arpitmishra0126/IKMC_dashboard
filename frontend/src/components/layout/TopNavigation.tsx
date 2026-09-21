@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Inborn", to: "/inborn", matchPaths: ["/inborn"] },
   { label: "Outborn", to: "/outborn", matchPaths: ["/outborn"] },
   { label: "Discharge", to: "/discharge", matchPaths: ["/discharge"] },
+  { label: "Data Quality", to: "/data-quality", matchPaths: ["/data-quality"] },
 ]
 
 /**

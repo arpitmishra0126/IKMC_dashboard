@@ -31,6 +31,10 @@ def _delivery_unit(prefix: str) -> dict[str, Any]:
         "ssc_under_2h": to_native(getattr(indicators, f"get_{prefix}_ssc_under_2h_count")()),
         "avg_kmc": to_native(getattr(indicators, f"get_{prefix}_avg_kmc")()),
         "exclusive_bf": to_native(getattr(indicators, f"get_{prefix}_bf_count")()),
+        "coverage": {
+            "percentage": to_native(getattr(indicators, f"get_{prefix}_coverage")()),
+            "achieved_count": to_native(getattr(indicators, f"get_{prefix}_achieved_count")()),
+        },
         "attachment": {
             "minutes": to_native(minutes),
             "min_minutes": to_native(min_minutes),
