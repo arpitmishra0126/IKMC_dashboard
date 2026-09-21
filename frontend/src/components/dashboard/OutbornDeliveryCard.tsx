@@ -34,7 +34,7 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
   ]
 
   return (
-    <Card className={cn("border-l-4", styles.border)}>
+    <Card className={cn("gap-3 border-l-4", styles.border)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <span className={cn("bg-muted rounded-md p-1.5", styles.icon)}>
@@ -43,11 +43,11 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <CardContent className="pb-4">
+        <dl className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4 sm:gap-x-4">
           {metrics.map((metric) => (
-            <div key={metric.label}>
-              <dt className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wide">
+            <div key={metric.label} className="min-w-0">
+              <dt className="text-muted-foreground truncate text-[11px] font-semibold uppercase tracking-wide">
                 {metric.label}
               </dt>
               <dd className="text-xl font-bold tabular-nums">{metric.value}</dd>
@@ -62,13 +62,13 @@ export function OutbornDeliveryCard({ title, unit, icon: Icon, accent }: Outborn
 export function OutbornDeliveryCardSkeleton({ title, accent }: { title: string; accent: CohortAccent }) {
   const styles = COHORT_ACCENT_STYLES[accent]
   return (
-    <Card className={cn("border-l-4", styles.border)}>
+    <Card className={cn("gap-3 border-l-4", styles.border)}>
       <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {Array.from({ length: 5 }).map((_, index) => (
+      <CardContent className="pb-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4 sm:gap-x-4">
+          {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={`outborn-metric-skeleton-${index}`} className="h-10 w-16" />
           ))}
         </div>
