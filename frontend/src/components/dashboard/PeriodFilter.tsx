@@ -12,6 +12,18 @@ const OPTIONS: Array<{ value: OverviewPeriod; label: string }> = [
   { value: "3m", label: "Last 3 Months" },
 ]
 
+/** Today's date as a local YYYY-MM-DD string - used as the `max` bound on
+ * both date inputs so the native picker cannot select or navigate to a
+ * future date/month/year. Derived from the system clock on every render,
+ * never hard-coded. */
+function todayIso(): string {
+  const now = new Date()
+  const yyyy = now.getFullYear()
+  const mm = String(now.getMonth() + 1).padStart(2, "0")
+  const dd = String(now.getDate()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd}`
+}
+
 interface PeriodFilterProps {
   value: OverviewPeriod
   onChange: (period: OverviewPeriod) => void
@@ -20,6 +32,11 @@ interface PeriodFilterProps {
    * buttons render as active. */
   isCustomActive: boolean
   onApplyCustomRange: (range: OverviewDateRange) => void
+  /** Clears a currently-applied custom range only (does not itself change
+   * `value`) - the dashboard then falls back to whichever preset `value`
+   * already holds, matching how an applied custom range overrides the
+   * presets in the first place. */
+  onClearCustomRange: () => void
 }
 
 /**
@@ -35,16 +52,32 @@ interface PeriodFilterProps {
  * are local, uncommitted draft state - the dashboard only refetches with
  * the new range once "Apply" is clicked, never as the dates change.
  */
-export function PeriodFilter({ value, onChange, isCustomActive, onApplyCustomRange }: PeriodFilterProps) {
+export function PeriodFilter({
+  value,
+  onChange,
+  isCustomActive,
+  onApplyCustomRange,
+  onClearCustomRange,
+}: PeriodFilterProps) {
   const [fromDate, setFromDate] = useState("")
   const [toDate, setToDate] = useState("")
+  const today = todayIso()
 
   const bothDatesGiven = fromDate !== "" && toDate !== ""
   const rangeInvalid = bothDatesGiven && fromDate > toDate
   const canApply = bothDatesGiven && !rangeInvalid
+  const canClear = fromDate !== "" || toDate !== "" || isCustomActive
+
+  const handleClear = () => {
+    setFromDate("")
+    setToDate("")
+    if (isCustomActive) {
+      onClearCustomRange()
+    }
+  }
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className="flex flex-col items-end gap-2 pr-1">
       <div
         role="group"
         aria-label="Data period"
@@ -83,7 +116,7 @@ export function PeriodFilter({ value, onChange, isCustomActive, onApplyCustomRan
           id="reporting-period-from"
           type="date"
           value={fromDate}
-          max={toDate || undefined}
+          max={toDate || today}
           onChange={(event) => setFromDate(event.target.value)}
           className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 text-xs outline-none focus-visible:ring-2"
         />
@@ -95,6 +128,7 @@ export function PeriodFilter({ value, onChange, isCustomActive, onApplyCustomRan
           type="date"
           value={toDate}
           min={fromDate || undefined}
+          max={today}
           onChange={(event) => setToDate(event.target.value)}
           className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 text-xs outline-none focus-visible:ring-2"
         />
@@ -105,6 +139,9 @@ export function PeriodFilter({ value, onChange, isCustomActive, onApplyCustomRan
           onClick={() => onApplyCustomRange({ from: fromDate, to: toDate })}
         >
           Apply
+        </Button>
+        <Button type="button" size="sm" variant="outline" disabled={!canClear} onClick={handleClear}>
+          Clear
         </Button>
       </div>
 

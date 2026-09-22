@@ -53,6 +53,7 @@ export function InbornPage() {
             }}
             isCustomActive={customRange !== undefined}
             onApplyCustomRange={setCustomRange}
+            onClearCustomRange={() => setCustomRange(undefined)}
           />
         }
       >

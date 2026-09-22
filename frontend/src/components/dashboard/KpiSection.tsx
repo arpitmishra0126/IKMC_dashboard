@@ -62,6 +62,7 @@ export function KpiSection() {
           }}
           isCustomActive={customRange !== undefined}
           onApplyCustomRange={setCustomRange}
+          onClearCustomRange={() => setCustomRange(undefined)}
         />
       }
     >

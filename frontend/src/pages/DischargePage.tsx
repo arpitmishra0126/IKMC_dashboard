@@ -56,6 +56,7 @@ export function DischargePage() {
             }}
             isCustomActive={customRange !== undefined}
             onApplyCustomRange={setCustomRange}
+            onClearCustomRange={() => setCustomRange(undefined)}
           />
         }
       >

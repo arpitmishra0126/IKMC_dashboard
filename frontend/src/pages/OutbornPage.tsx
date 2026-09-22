@@ -55,6 +55,7 @@ export function OutbornPage() {
             }}
             isCustomActive={customRange !== undefined}
             onApplyCustomRange={setCustomRange}
+            onClearCustomRange={() => setCustomRange(undefined)}
           />
         }
       >
