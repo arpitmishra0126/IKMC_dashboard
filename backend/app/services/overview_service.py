@@ -6,10 +6,12 @@ feedback: Total Cases, Delivery Type, SSC<2h, Avg KMC, Exclusive BF,
 Attachment age).
 
 The "Reporting Period" filter (relative buttons + custom From/To) narrows:
-- PRE-SCREENED/SCREENED/ELIGIBLE FOR ENROLLMENT by mother.enr_dof (the
-  STUDY ENROLLMENT DATE - NOT scr_dof, eligibility's screening date; see
-  services.indicators._filter_by_enr_dof for the field-identification
-  evidence)
+- PRE-SCREENED/SCREENED/ELIGIBLE FOR ENROLLMENT by eligibility.scr_dof
+  (the SCREENING DATE - NOT mother.enr_dof, the enrollment date; enr_dof
+  is populated only for the small subset of babies who were actually
+  enrolled, so filtering this screening-stage funnel by it collapsed all
+  three KPIs to the same tiny enrolled-only count - see
+  services.indicators._filter_by_scr_dof / get_eligibility_df)
 - Discharged/Referred/LAMA/Death by dis_inf_dt_outcome (actual infant
   outcome date, not dis_dof/form-completion date) - unchanged by this
   feature, still its own field; only the shared boundary dates shift

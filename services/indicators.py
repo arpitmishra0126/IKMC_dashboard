@@ -6,11 +6,13 @@ import streamlit as st
 def _filter_by_scr_dof(df, start=None, end=None):
     """
     Optional scr_dof (screening date) range filter, applied only when both
-    bounds are given. No longer called anywhere (see _filter_by_enr_dof
-    below) - scr_dof is the screening date, not the study enrollment date,
-    so it was the wrong field for the Overview Reporting Period filter.
-    Left defined, unused, rather than deleted, since it may still be a
-    useful screening-date filter for something else later.
+    bounds are given. Used by get_eligibility_df() to filter the
+    Pre-screened/Screened/Eligible funnel for the Overview Reporting
+    Period feature - those are screening-stage KPIs, so they must be
+    filtered by their own scr_dof, not by mother.enr_dof (enrollment
+    date), which is populated only for the small subset of babies who
+    were actually enrolled (364/364 mother rows) and previously collapsed
+    all three KPIs to the same tiny enrolled-only count.
     """
     if start is None or end is None:
         return df
@@ -22,21 +24,17 @@ def _filter_by_scr_dof(df, start=None, end=None):
 def _filter_by_enr_dof(df, start=None, end=None):
     """
     Optional STUDY ENROLLMENT DATE range filter, applied only when both
-    bounds are given. Every existing zero-arg caller is unaffected (start
-    and end default to None, returning df unchanged) - this exists solely
-    to support the Overview Reporting Period filter; no other calculation
-    logic is changed.
-
-    The enrollment date is mother.enr_dof ("Enrollment - Date of Form"),
-    NOT eligibility.scr_dof ("Screening - Date of Form"). Confirmed by
-    inspection: scr_dof is populated for every screened baby (4892/4892),
-    while enr_dof is populated only for the much smaller subset who were
-    actually enrolled (364/364 mother rows) - and enr_dof is always on or
-    after that same baby's scr_dof (0-22 days later, median same-day,
-    never earlier), consistent with "screening happens, then enrollment
-    follows." `df` here is an eligibility-shaped frame (has scr_babyid,
-    not enr_dof directly), so enr_dof is pulled in via a babyid lookup
-    against the mother/enrollment table.
+    bounds are given. No longer called anywhere in this module (see
+    get_eligibility_df, which now uses _filter_by_scr_dof instead) -
+    mother.enr_dof is populated only for the small subset of babies who
+    were actually enrolled (364/364 mother rows), so filtering the
+    Pre-screened/Screened/Eligible screening funnel by it collapsed all
+    three KPIs to the same tiny enrolled-only count. Left defined, unused,
+    since overview_period_metrics.py has its own copy of this same logic,
+    correctly used there for enrollment-stage figures (Cohort Summary).
+    `df` here is an eligibility-shaped frame (has scr_babyid, not enr_dof
+    directly), so enr_dof is pulled in via a babyid lookup against the
+    mother/enrollment table.
     """
     if start is None or end is None:
         return df
@@ -51,7 +49,7 @@ def _filter_by_enr_dof(df, start=None, end=None):
 
 def get_eligibility_df(start=None, end=None):
     data = load_all_data()
-    return _filter_by_enr_dof(data["eligibility"], start, end)
+    return _filter_by_scr_dof(data["eligibility"], start, end)
 
 # ==================================================
 # BASE DATASETS - DASHBOARD MEASURES
