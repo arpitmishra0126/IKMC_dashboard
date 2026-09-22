@@ -23,7 +23,11 @@ export interface TotalCasesSummary {
 export interface OverviewResponse {
   pre_screened: number
   screened: number
-  eligible_for_enrollment: number
+  /** The project's existing PRE-SCREENED -> SCREENED -> ELIGIBLE ->
+   * CONSENTED -> ENROLLED funnel endpoint (scr_mconst == 11 AND
+   * scr_bw_ga_stable == 12) - see services/indicators.py get_enrolled_df().
+   * Replaces the old eligible_for_enrollment card. */
+  enrolled: number
   /** Filtered by dis_inf_dt_outcome (actual infant outcome date), same
    * resolved period boundaries as the 3 fields above (which use the
    * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof). */

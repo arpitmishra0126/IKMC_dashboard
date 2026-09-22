@@ -11,7 +11,7 @@ indicator functions (and everything they're built on - get_master_df,
 get_enrollment_master_df, get_ssc_under_2h_df, ...) was judged too
 invasive for this feature. Per explicit instruction, this module instead
 reimplements the SAME formulas as a small, self-contained calculation
-path that starts from an enrollment-date (mother.enr_dof) -filtered
+path that starts from a screening-date (eligibility.scr_dof) -filtered
 eligibility slice, so:
 
 - Every existing caller (Cohort Summary, Inborn page, Outborn page,
@@ -53,21 +53,19 @@ from services.loader import load_all_data
 _DELIVERY_MODE = FIELD_MAP["delivery_mode"]
 
 
-def _filter_by_enr_dof(df: pd.DataFrame, mother: pd.DataFrame, start=None, end=None) -> pd.DataFrame:
-    """Same semantics as indicators._filter_by_enr_dof, reimplemented here
+def _filter_by_scr_dof(df: pd.DataFrame, start=None, end=None) -> pd.DataFrame:
+    """Same semantics as indicators._filter_by_scr_dof, reimplemented here
     so this module has no import-time dependency on services.indicators.
-    Filters by the STUDY ENROLLMENT DATE (mother.enr_dof - "Enrollment,
-    Date of Form"), NOT scr_dof (eligibility's "Screening, Date of Form")
-    - see that function's docstring in services/indicators.py for the full
-    field-identification evidence. `mother` is passed in rather than
-    reloaded here since every caller already has it in hand."""
+    Filters by eligibility.scr_dof (SCREENING DATE), NOT mother.enr_dof
+    (the enrollment date) - enr_dof is populated only for the small subset
+    of babies who were actually enrolled, so filtering this screening-stage
+    population by it collapsed Overview Total Cases / Inborn / Outborn to a
+    tiny enrolled-only count. See that function's docstring in
+    services/indicators.py for the full field-identification evidence."""
     if start is None or end is None:
         return df
-    enr_dof_by_babyid = mother.set_index(FIELD_MAP["mother_babyid"])["enr_dof"]
-    enr_dof = pd.to_datetime(
-        df[FIELD_MAP["eligibility_babyid"]].map(enr_dof_by_babyid), errors="coerce"
-    )
-    return df[(enr_dof >= start) & (enr_dof <= end)]
+    dof = pd.to_datetime(df["scr_dof"], errors="coerce")
+    return df[(dof >= start) & (dof <= end)]
 
 
 def _avg_kmc_hours(df: pd.DataFrame) -> float:
@@ -218,7 +216,7 @@ def _build_groups(start=None, end=None) -> tuple["_Group", "_Group", "_Group"]:
     """Builds the (MSNCU, PNC, Outborn) _Group triple shared by every
     period-aware calculation in this module (Overview's Total Cases
     summary and Attachment Age case list, and the Inborn/Outborn per-unit
-    period stats below) - same enr_dof-filtered eligibility, same masks,
+    period stats below) - same scr_dof-filtered eligibility, same masks,
     mirroring get_msncu_master_df()/get_pnc_master_df()/get_outborn_df()
     and their enrollment-side equivalents exactly (see module docstring).
     Extracted from what was previously duplicated inline in
@@ -227,7 +225,7 @@ def _build_groups(start=None, end=None) -> tuple["_Group", "_Group", "_Group"]:
     extraction."""
     data = load_all_data()
     mother = data["mother"]
-    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
+    eligibility = _filter_by_scr_dof(data["eligibility"], start, end)
     daily = data["daily"]
 
     enrollment = eligibility.merge(
@@ -267,7 +265,7 @@ def get_overview_total_cases(start=None, end=None) -> dict:
     """
     data = load_all_data()
     mother = data["mother"]
-    eligibility = _filter_by_enr_dof(data["eligibility"], mother, start, end)
+    eligibility = _filter_by_scr_dof(data["eligibility"], start, end)
     daily = data["daily"]
 
     master = eligibility.merge(
@@ -396,7 +394,7 @@ def _attachment_case_records(df: pd.DataFrame, initiation_records: pd.DataFrame)
 def get_overview_attachment_cases(section: str, start=None, end=None) -> pd.DataFrame:
     """Per-case audit rows for the Overview page's combined Attachment Age
     (MSNCU + PNC + Outborn, `section` = 'nvd' or 'csection'), matching
-    get_overview_total_cases()'s exact group construction (same enr_dof
+    get_overview_total_cases()'s exact group construction (same scr_dof
     period filter, same masks) via the shared _build_groups() helper."""
     data = load_all_data()
     daily = data["daily"]

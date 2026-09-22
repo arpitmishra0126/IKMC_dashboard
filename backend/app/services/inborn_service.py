@@ -2,6 +2,13 @@
 Backs GET /api/dashboard/inborn - a cohesive rollup of pages/2_Inborn.py
 (overall average iKMC, MSNCU section, PNC section).
 
+`overall_avg_kmc_hours` uses indicators.get_inborn_avg_kmc_hours() (MSNCU +
+PNC master rows only), NOT get_avg_kmc_hours() (the entire daily/DCT
+table, including Outborn and any other non-Inborn rows) - the latter was a
+confirmed population-scoping bug, since Outborn's equivalent page-level
+figure (outborn_service.py's overall_avg_kmc) was already correctly
+cohort-scoped to its own population.
+
 Per docs/MIGRATION_DECISIONS.md #5: the "exclusive_bf" NVD count for both
 MSNCU and PNC is computed by get_{msncu,pnc}_nvd_bf_count(), which filters
 on scr_del_mode == 11 only, while every other NVD metric on the same unit
@@ -101,7 +108,7 @@ def get_inborn_dashboard(
     start, end = _resolve_range(period, from_date, to_date)
     display_start, display_end = _resolve_display_range(start, end)
     return {
-        "overall_avg_kmc_hours": to_native(indicators.get_avg_kmc_hours()),
+        "overall_avg_kmc_hours": to_native(indicators.get_inborn_avg_kmc_hours()),
         "msncu": _unit_detail("msncu", start, end),
         "pnc": _unit_detail("pnc", start, end),
         "period_start": display_start,

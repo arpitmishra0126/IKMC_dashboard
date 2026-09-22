@@ -23,14 +23,15 @@ import { KpiCard, KpiCardSkeleton } from "./KpiCard"
 import { PeriodFilter } from "./PeriodFilter"
 import { TotalCasesSummary, TotalCasesSummarySkeleton } from "./TotalCasesSummary"
 
-const KPI_LABELS = ["PRE-SCREENED", "SCREENED", "ELIGIBLE FOR ENROLLMENT"] as const
+const KPI_LABELS = ["PRE-SCREENED", "SCREENED", "ENROLLED"] as const
 const DISCHARGE_LABELS = ["Discharged", "Referred", "LAMA", "Death"] as const
 
 /**
  * Reproduces the "Key Performance Indicators (KPIs)" section of app.py:
- * PRE-SCREENED, SCREENED, ELIGIBLE FOR ENROLLMENT - backed by
- * GET /api/dashboard/overview. Icons are purely decorative/contextual and
- * do not add or infer any new metric.
+ * PRE-SCREENED, SCREENED, ENROLLED (formerly ELIGIBLE FOR ENROLLMENT -
+ * this card now shows the project's existing ENROLLED funnel endpoint
+ * instead) - backed by GET /api/dashboard/overview. Icons are purely
+ * decorative/contextual and do not add or infer any new metric.
  *
  * The Reporting Period selector controls this 3-card row (filtered by the
  * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof), the "Discharge
@@ -95,10 +96,10 @@ export function KpiSection() {
                   description="Preterm / low-birth-weight"
                 />
                 <KpiCard
-                  label="ELIGIBLE FOR ENROLLMENT"
-                  value={data.eligible_for_enrollment}
+                  label="ENROLLED"
+                  value={data.enrolled}
                   icon={UserCheck}
-                  description="Meeting enrollment criteria"
+                  description="Children enrolled in the study"
                 />
               </>
             )}

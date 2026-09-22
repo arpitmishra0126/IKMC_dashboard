@@ -23,7 +23,7 @@ class TotalCasesSummary(BaseModel):
 class OverviewResponse(BaseModel):
     pre_screened: int
     screened: int
-    eligible_for_enrollment: int
+    enrolled: int
     discharged: int
     referred: int
     lama: int

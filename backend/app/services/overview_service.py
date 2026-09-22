@@ -6,12 +6,17 @@ feedback: Total Cases, Delivery Type, SSC<2h, Avg KMC, Exclusive BF,
 Attachment age).
 
 The "Reporting Period" filter (relative buttons + custom From/To) narrows:
-- PRE-SCREENED/SCREENED/ELIGIBLE FOR ENROLLMENT by eligibility.scr_dof
-  (the SCREENING DATE - NOT mother.enr_dof, the enrollment date; enr_dof
-  is populated only for the small subset of babies who were actually
-  enrolled, so filtering this screening-stage funnel by it collapsed all
-  three KPIs to the same tiny enrolled-only count - see
-  services.indicators._filter_by_scr_dof / get_eligibility_df)
+- PRE-SCREENED/SCREENED/ENROLLED by eligibility.scr_dof (the SCREENING
+  DATE - NOT mother.enr_dof, the enrollment date; enr_dof is populated
+  only for the small subset of babies who were actually enrolled, so
+  filtering this screening-stage funnel by it collapsed these KPIs to
+  the same tiny enrolled-only count - see services.indicators.
+  _filter_by_scr_dof / get_eligibility_df). ENROLLED itself
+  (get_total_enrolled/get_enrolled_df) is the project's existing
+  PRE-SCREENED -> SCREENED -> ELIGIBLE -> CONSENTED -> ENROLLED funnel
+  endpoint (scr_mconst == 11 AND scr_bw_ga_stable == 12), not a new
+  definition - replaces the old ELIGIBLE FOR ENROLLMENT card, which is
+  no longer surfaced on Overview.
 - Discharged/Referred/LAMA/Death by dis_inf_dt_outcome (actual infant
   outcome date, not dis_dof/form-completion date) - unchanged by this
   feature, still its own field; only the shared boundary dates shift
@@ -117,7 +122,7 @@ def get_overview(
     return {
         "pre_screened": to_native(indicators.get_total_screening_records(start, end)),
         "screened": to_native(indicators.get_total_screened(start, end)),
-        "eligible_for_enrollment": to_native(indicators.get_total_eligible(start, end)),
+        "enrolled": to_native(indicators.get_total_enrolled(start, end)),
         "discharged": to_native(indicators.get_total_discharged(start, end)),
         "referred": to_native(indicators.get_total_referred(start, end)),
         "lama": to_native(indicators.get_total_lama(start, end)),
