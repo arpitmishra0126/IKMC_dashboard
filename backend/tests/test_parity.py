@@ -27,7 +27,13 @@ import pytest
 OVERVIEW_MAP = {
     "pre_screened": "get_total_screening_records",
     "screened": "get_total_screened",
-    "enrolled": "get_total_enrolled",
+    # enrolled/enrolled_msncu/enrolled_stable now represent the Consented
+    # population (services.indicators.get_overview_enrolled_total() etc.),
+    # per the verified ICMR source structure - NOT get_total_enrolled()
+    # (a different, pre-existing metric with an unrelated
+    # scr_bw_ga_stable == 12 filter). No baseline scalar exists yet for
+    # these new functions, so they are intentionally left out of this
+    # baseline-parity map rather than compared against the wrong function.
     "discharged": "get_total_discharged",
     "referred": "get_total_referred",
     "lama": "get_total_lama",

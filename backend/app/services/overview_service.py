@@ -6,17 +6,25 @@ feedback: Total Cases, Delivery Type, SSC<2h, Avg KMC, Exclusive BF,
 Attachment age).
 
 The "Reporting Period" filter (relative buttons + custom From/To) narrows:
-- PRE-SCREENED/SCREENED/ENROLLED by eligibility.scr_dof (the SCREENING
-  DATE - NOT mother.enr_dof, the enrollment date; enr_dof is populated
-  only for the small subset of babies who were actually enrolled, so
-  filtering this screening-stage funnel by it collapsed these KPIs to
-  the same tiny enrolled-only count - see services.indicators.
-  _filter_by_scr_dof / get_eligibility_df). ENROLLED itself
-  (get_total_enrolled/get_enrolled_df) is the project's existing
-  PRE-SCREENED -> SCREENED -> ELIGIBLE -> CONSENTED -> ENROLLED funnel
-  endpoint (scr_mconst == 11 AND scr_bw_ga_stable == 12), not a new
-  definition - replaces the old ELIGIBLE FOR ENROLLMENT card, which is
-  no longer surfaced on Overview.
+- PRE-SCREENED/SCREENED/ENROLLED (+ enrolled_msncu/enrolled_stable) by
+  eligibility.scr_dof (the SCREENING DATE - NOT mother.enr_dof, the
+  enrollment date; enr_dof is populated only for the small subset of
+  babies who were actually enrolled, so filtering this screening-stage
+  funnel by it collapsed these KPIs to the same tiny enrolled-only count
+  - see services.indicators._filter_by_scr_dof / get_eligibility_df).
+  ENROLLED represents the CONSENTED population (scr_mconst == 11 on top
+  of Eligible - services.indicators.get_overview_enrolled_total(), which
+  wraps the existing get_consented_df()), per the verified ICMR source
+  structure (Eligible -> Consent refused / could not be administered ->
+  Consented -> Enrolled PT/LBW requiring M-SNCU / Enrolled Stable
+  PT/LBW). enrolled_msncu/enrolled_stable split that same Consented
+  population by scr_sncu_sick (11/12) - see
+  get_overview_enrolled_msncu_total()/get_overview_enrolled_stable_total().
+  This replaces the old ELIGIBLE FOR ENROLLMENT card. It is NOT the same
+  as services.indicators.get_total_enrolled()/get_enrolled_df(), which
+  add an unrelated scr_bw_ga_stable == 12 filter not part of this
+  structure - those functions are left unchanged/unused here, in case
+  anything else still relies on them.
 - Discharged/Referred/LAMA/Death by dis_inf_dt_outcome (actual infant
   outcome date, not dis_dof/form-completion date) - unchanged by this
   feature, still its own field; only the shared boundary dates shift
@@ -122,7 +130,9 @@ def get_overview(
     return {
         "pre_screened": to_native(indicators.get_total_screening_records(start, end)),
         "screened": to_native(indicators.get_total_screened(start, end)),
-        "enrolled": to_native(indicators.get_total_enrolled(start, end)),
+        "enrolled": to_native(indicators.get_overview_enrolled_total(start, end)),
+        "enrolled_msncu": to_native(indicators.get_overview_enrolled_msncu_total(start, end)),
+        "enrolled_stable": to_native(indicators.get_overview_enrolled_stable_total(start, end)),
         "discharged": to_native(indicators.get_total_discharged(start, end)),
         "referred": to_native(indicators.get_total_referred(start, end)),
         "lama": to_native(indicators.get_total_lama(start, end)),

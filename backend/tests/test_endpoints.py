@@ -84,7 +84,7 @@ def test_meta_sync_schema(client):
 def test_overview_schema(client):
     body = client.get("/api/dashboard/overview").json()
     int_keys = {
-        "pre_screened", "screened", "enrolled",
+        "pre_screened", "screened", "enrolled", "enrolled_msncu", "enrolled_stable",
         "discharged", "referred", "lama", "death",
     }
     assert set(body.keys()) == int_keys | {"period_start", "period_end", "total_cases_summary"}

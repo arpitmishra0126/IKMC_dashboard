@@ -24,6 +24,8 @@ class OverviewResponse(BaseModel):
     pre_screened: int
     screened: int
     enrolled: int
+    enrolled_msncu: int
+    enrolled_stable: int
     discharged: int
     referred: int
     lama: int

@@ -23,11 +23,22 @@ export interface TotalCasesSummary {
 export interface OverviewResponse {
   pre_screened: number
   screened: number
-  /** The project's existing PRE-SCREENED -> SCREENED -> ELIGIBLE ->
-   * CONSENTED -> ENROLLED funnel endpoint (scr_mconst == 11 AND
-   * scr_bw_ga_stable == 12) - see services/indicators.py get_enrolled_df().
-   * Replaces the old eligible_for_enrollment card. */
+  /** The CONSENTED population (scr_mconst == 11, on top of Eligible) - per
+   * the verified ICMR source structure: Eligible -> Consent refused /
+   * could not be administered -> Consented -> Enrolled PT/LBW requiring
+   * M-SNCU / Enrolled Stable PT/LBW. See
+   * services/indicators.py get_overview_enrolled_total(). NOT the same as
+   * get_total_enrolled() (a different, pre-existing metric with an
+   * unrelated scr_bw_ga_stable == 12 filter). Replaces the old
+   * eligible_for_enrollment card. */
   enrolled: number
+  /** Enrolled PT/LBW babies requiring M-SNCU admission - scr_sncu_sick == 11
+   * on top of the Consented population. enrolled_msncu + enrolled_stable
+   * always equals enrolled. */
+  enrolled_msncu: number
+  /** Enrolled Stable PT/LBW babies - scr_sncu_sick == 12 on top of the
+   * Consented population. */
+  enrolled_stable: number
   /** Filtered by dis_inf_dt_outcome (actual infant outcome date), same
    * resolved period boundaries as the 3 fields above (which use the
    * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof). */

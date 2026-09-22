@@ -19,19 +19,21 @@ import type { OverviewDateRange, OverviewPeriod } from "@/types/overview"
 
 import { AttachmentAgeCard, AttachmentAgeCardSkeleton } from "./AttachmentAgeCard"
 import { CompactMetricCard, CompactMetricCardSkeleton } from "./CompactMetricCard"
+import { EnrolledKpiCard, EnrolledKpiCardSkeleton } from "./EnrolledKpiCard"
 import { KpiCard, KpiCardSkeleton } from "./KpiCard"
 import { PeriodFilter } from "./PeriodFilter"
 import { TotalCasesSummary, TotalCasesSummarySkeleton } from "./TotalCasesSummary"
 
-const KPI_LABELS = ["PRE-SCREENED", "SCREENED", "ENROLLED"] as const
 const DISCHARGE_LABELS = ["Discharged", "Referred", "LAMA", "Death"] as const
 
 /**
  * Reproduces the "Key Performance Indicators (KPIs)" section of app.py:
- * PRE-SCREENED, SCREENED, ENROLLED (formerly ELIGIBLE FOR ENROLLMENT -
- * this card now shows the project's existing ENROLLED funnel endpoint
- * instead) - backed by GET /api/dashboard/overview. Icons are purely
- * decorative/contextual and do not add or infer any new metric.
+ * PRE-SCREENED, SCREENED, ENROLLED - backed by GET /api/dashboard/overview.
+ * ENROLLED is one composite card (EnrolledKpiCard, not two separate KPI
+ * cards): the Consented population as its main value, with the M-SNCU-
+ * requiring / Stable PT/LBW split shown as a compact breakdown beneath it,
+ * per the verified ICMR source structure. Icons are purely decorative/
+ * contextual and do not add or infer any new metric.
  *
  * The Reporting Period selector controls this 3-card row (filtered by the
  * STUDY ENROLLMENT DATE, mother.enr_dof - not scr_dof), the "Discharge
@@ -81,7 +83,11 @@ export function KpiSection() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {isInitialLoading || !data ? (
-              KPI_LABELS.map((label) => <KpiCardSkeleton key={label} label={label} />)
+              <>
+                <KpiCardSkeleton label="PRE-SCREENED" />
+                <KpiCardSkeleton label="SCREENED" />
+                <EnrolledKpiCardSkeleton />
+              </>
             ) : (
               <>
                 <KpiCard
@@ -96,11 +102,15 @@ export function KpiSection() {
                   icon={Stethoscope}
                   description="Preterm / low-birth-weight"
                 />
-                <KpiCard
+                <EnrolledKpiCard
                   label="ENROLLED"
                   value={data.enrolled}
                   icon={UserCheck}
-                  description="Children enrolled in the study"
+                  description="Total enrolled PT/LBW babies"
+                  breakdown={[
+                    { label: "Enrolled PT/LBW babies requiring M-SNCU admission", value: data.enrolled_msncu },
+                    { label: "Enrolled Stable PT/LBW babies", value: data.enrolled_stable },
+                  ]}
                 />
               </>
             )}

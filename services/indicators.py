@@ -108,6 +108,53 @@ def get_total_enrolled(start=None, end=None):
     return len(get_enrolled_df(start, end))
 
 # ==================================================
+# OVERVIEW "ENROLLED" KPI - ICMR SOURCE STRUCTURE
+# ==================================================
+# Verified against the ICMR/source dashboard's structural reference:
+#   Eligible -> Consent refused / Consent could not be administered / Consented
+#            -> Consented -> Enrolled PT/LBW requiring M-SNCU / Enrolled Stable PT/LBW
+# CONSENTED (scr_mconst == 11 on top of Eligible - get_consented_df(), already
+# existing) is the parent population for the Overview "ENROLLED" KPI, NOT
+# get_enrolled_df() above (which adds an unrelated scr_bw_ga_stable == 12
+# filter not part of this structure - that is a different, pre-existing
+# metric, left unchanged/still available for any other caller). The two
+# breakdowns split Consented by scr_sncu_sick, which is mutually exclusive
+# and has zero unclassified records in the current dataset (verified: every
+# Consented record has scr_sncu_sick == 11 or 12, no NaN/other values).
+
+def get_msncu_requiring_df(start=None, end=None):
+    """Enrolled PT/LBW babies requiring M-SNCU admission - scr_sncu_sick == 11
+    applied on top of the Consented population (get_consented_df()). Distinct
+    from get_msncu_count(), which applies the same field to the ELIGIBLE
+    population instead."""
+    df = get_consented_df(start, end).copy()
+    return df[df["scr_sncu_sick"] == 11]
+
+
+def get_stable_ptlbw_df(start=None, end=None):
+    """Enrolled Stable PT/LBW babies - scr_sncu_sick == 12 applied on top of
+    the Consented population (get_consented_df())."""
+    df = get_consented_df(start, end).copy()
+    return df[df["scr_sncu_sick"] == 12]
+
+
+def get_overview_enrolled_total(start=None, end=None):
+    """The Overview 'ENROLLED' KPI value - the Consented population itself
+    (get_consented_df()), per the ICMR source structure. Kept as a distinct,
+    clearly-scoped function rather than repurposing get_total_consented()
+    (zero-arg, used elsewhere) or get_total_enrolled() (a different,
+    pre-existing metric - see get_enrolled_df() above)."""
+    return len(get_consented_df(start, end))
+
+
+def get_overview_enrolled_msncu_total(start=None, end=None):
+    return len(get_msncu_requiring_df(start, end))
+
+
+def get_overview_enrolled_stable_total(start=None, end=None):
+    return len(get_stable_ptlbw_df(start, end))
+
+# ==================================================
 # TOP KPI CARDS
 # ==================================================
 
