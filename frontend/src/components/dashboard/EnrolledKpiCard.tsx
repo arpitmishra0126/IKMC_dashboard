@@ -43,11 +43,11 @@ export function EnrolledKpiCard({ label, value, description, icon: Icon, breakdo
         <p className="text-4xl font-bold tabular-nums tracking-tight">{formatNumber(value)}</p>
         <p className="text-muted-foreground mt-1 text-xs">{description}</p>
 
-        <div className="border-border/70 mt-3 grid grid-cols-2 gap-3 border-t pt-2.5">
+        <div className="border-border/70 mt-2 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t pt-1.5">
           {breakdown.map((item) => (
-            <div key={item.label}>
-              <p className="text-base font-bold tabular-nums">{formatNumber(item.value)}</p>
-              <p className="text-muted-foreground text-[10.5px] leading-tight">{item.label}</p>
+            <div key={item.label} className="min-w-0">
+              <p className="text-xs font-bold tabular-nums">{formatNumber(item.value)}</p>
+              <p className="text-muted-foreground text-[9.5px] leading-snug break-words">{item.label}</p>
             </div>
           ))}
         </div>
@@ -66,9 +66,9 @@ export function EnrolledKpiCardSkeleton() {
       </CardHeader>
       <CardContent>
         <Skeleton className="h-10 w-24" />
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Skeleton className="h-7 w-full" />
+          <Skeleton className="h-7 w-full" />
         </div>
       </CardContent>
     </Card>
