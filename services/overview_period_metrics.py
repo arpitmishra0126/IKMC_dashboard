@@ -241,11 +241,15 @@ def _build_groups(start=None, end=None) -> tuple["_Group", "_Group", "_Group"]:
     outborn_mask_master = master["scr_pob"].isin([12, 13, 14])
 
     # Enrollment-based cohort filters (used for SSC<2h/BF/attachment) mirror
-    # get_msncu_enrollment_df()/get_pnc_enrollment_df() EXACTLY: these check
-    # ONLY scr_sncu_sick, with NO scr_pob condition - confirmed against
-    # services/indicators.py:315-321. Reproduced as-is, not "fixed".
-    msncu_mask_enr = enrollment["scr_sncu_sick"] == 11
-    pnc_mask_enr = enrollment["scr_sncu_sick"] == 12
+    # get_msncu_enrollment_df()/get_pnc_enrollment_df() EXACTLY, including
+    # the scr_pob == 11 guard those two functions were fixed to require -
+    # without it, outborn babies who happen to carry an scr_sncu_sick value
+    # leaked into Overview's MSNCU/PNC-derived Attachment Age/Exclusive
+    # BF/SSC<2h figures (confirmed: NVD case_count 545 -> 454, C-section
+    # 514 -> 505). This mask previously predated that fix and was never
+    # updated to match - now it is.
+    msncu_mask_enr = (enrollment["scr_pob"] == 11) & (enrollment["scr_sncu_sick"] == 11)
+    pnc_mask_enr = (enrollment["scr_pob"] == 11) & (enrollment["scr_sncu_sick"] == 12)
     outborn_mask_enr = enrollment["scr_pob"].isin([12, 13, 14])
 
     msncu = _Group(master[msncu_mask_master], enrollment[msncu_mask_enr], strict_nvd_for_bf=True)
@@ -408,6 +412,43 @@ def get_overview_attachment_cases(section: str, start=None, end=None) -> pd.Data
         frames.append(_attachment_case_records(group_df, initiation_records))
 
     return pd.concat(frames, ignore_index=True)
+
+
+def get_overview_attachment_case_export_rows(start=None, end=None) -> pd.DataFrame:
+    """Case-level rows for all four Overview Attachment Age groups (Inborn
+    NVD/C-Section, Outborn NVD/C-Section), for the Attachment Age Excel
+    export. Reuses the exact same _build_groups()/_earliest_initiation_records()/
+    _attachment_case_records() pieces as get_overview_attachment_cases()
+    above - same population, same scr_dof period filter, same calculation -
+    just additionally tagging each row with its cohort (msncu+pnc =>
+    "Inborn", outborn => "Outborn", matching how every other Overview/
+    Cohort Summary figure already combines msncu+pnc into "Inborn") and
+    delivery section, since the export needs a 4-way breakdown that the
+    combined nvd/csection scopes above don't carry. No new calculation
+    logic - only extra labels on the same rows."""
+    data = load_all_data()
+    daily = data["daily"]
+
+    msncu, pnc, outborn = _build_groups(start, end)
+    initiation_records = _earliest_initiation_records(daily)
+
+    frames = []
+    for cohort_label, groups in (("Inborn", (msncu, pnc)), ("Outborn", (outborn,))):
+        for section_label, section_key in (("NVD", "nvd"), ("C-Section", "csection")):
+            for group in groups:
+                group_df = group.bf_attachment_nvd if section_key == "nvd" else group.bf_attachment_csection
+                rows = _attachment_case_records(group_df, initiation_records)
+                if len(rows) == 0:
+                    continue
+                rows = rows.copy()
+                rows["cohort"] = cohort_label
+                rows["delivery"] = section_label
+                frames.append(rows)
+
+    columns = ["scr_babyid", "dct_recordid", "_source", "_minutes", "cohort", "delivery"]
+    if not frames:
+        return pd.DataFrame(columns=columns)
+    return pd.concat(frames, ignore_index=True)[columns]
 
 
 # ==================================================

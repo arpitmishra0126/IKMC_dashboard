@@ -1,16 +1,80 @@
-import { Clock, Info } from "lucide-react"
+import { Clock, Download, Info, Loader2 } from "lucide-react"
 import { useState } from "react"
 
 import {
   AttachmentCaseDrawer,
   type AttachmentDrawerRequest,
 } from "@/components/dashboard/AttachmentCaseDrawer"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
+import { ApiError } from "@/services/apiClient"
+import { exportAttachmentAge } from "@/services/dashboardService"
 import type { AttachmentScope, AttachmentScopePrefix } from "@/types/attachmentCases"
 import type { AttachmentStat, AttachmentStatSplit } from "@/types/common"
 import type { OverviewDateRange, OverviewPeriod } from "@/types/overview"
+
+/** Triggers the browser download for an already-fetched blob, given a
+ * filename - no navigation, no page reload. */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+interface ExportAttachmentAgeButtonProps {
+  period?: OverviewPeriod
+  customRange?: OverviewDateRange
+}
+
+/**
+ * "Export Attachment Age" button for the Overview Attachment Age card
+ * only (see AttachmentAgeCardProps.showExportButton - every other page
+ * using this shared component omits it, so their cards are visually
+ * unchanged). Calls the existing Overview Reporting Period state through
+ * to GET /api/dashboard/attachment-age/export, which reuses the same
+ * case-level Attachment Age data the card itself displays - nothing is
+ * recalculated on the frontend.
+ */
+function ExportAttachmentAgeButton({ period, customRange }: ExportAttachmentAgeButtonProps) {
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  async function handleExport() {
+    setStatus("loading")
+    setErrorMessage(null)
+    try {
+      const blob = await exportAttachmentAge(period ?? "all", customRange)
+      downloadBlob(blob, "Attachment_Age_Overview.xlsx")
+      setStatus("idle")
+    } catch (error) {
+      setErrorMessage(error instanceof ApiError ? error.detail : "Export failed. Please try again.")
+      setStatus("error")
+    }
+  }
+
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <Button type="button" size="sm" variant="outline" disabled={status === "loading"} onClick={handleExport}>
+        {status === "loading" ? (
+          <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+        ) : (
+          <Download className="size-3.5" aria-hidden="true" />
+        )}
+        Export Attachment Age
+      </Button>
+      {status === "error" && errorMessage ? (
+        <p className="text-destructive max-w-48 text-right text-xs font-medium">{errorMessage}</p>
+      ) : null}
+    </div>
+  )
+}
 
 function formatDaysHoursMinutes(totalMinutes: number): string {
   const rounded = Math.round(totalMinutes)
@@ -145,6 +209,11 @@ interface AttachmentAgeCardProps {
   avgIsCombined?: boolean
   period?: OverviewPeriod
   customRange?: OverviewDateRange
+  /** Shows the "Export Attachment Age" button at the top-right of the
+   * header, aligned with the title - only the Overview page's instance of
+   * this card sets this; every other usage (Inborn/Outborn/MSNCU/PNC)
+   * omits it, so those cards are visually unchanged. */
+  showExportButton?: boolean
 }
 
 /**
@@ -164,19 +233,25 @@ export function AttachmentAgeCard({
   avgIsCombined,
   period,
   customRange,
+  showExportButton,
 }: AttachmentAgeCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <span className="bg-primary/10 text-primary rounded-lg p-2">
-            <Clock className="size-5" aria-hidden="true" />
-          </span>
-          Attachment Age
-        </CardTitle>
-        <CardDescription>
-          Time from birth to first breast milk attachment (early initiation)
-        </CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <span className="bg-primary/10 text-primary rounded-lg p-2">
+                <Clock className="size-5" aria-hidden="true" />
+              </span>
+              Attachment Age
+            </CardTitle>
+            <CardDescription>
+              Time from birth to first breast milk attachment (early initiation)
+            </CardDescription>
+          </div>
+          {showExportButton ? <ExportAttachmentAgeButton period={period} customRange={customRange} /> : null}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

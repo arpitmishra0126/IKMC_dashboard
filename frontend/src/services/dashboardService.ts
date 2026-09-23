@@ -4,7 +4,7 @@
  * backend/app/api/*.py and backend/app/schemas/*.py - nothing here
  * reimplements or reshapes what the backend returns.
  */
-import { apiGet, apiPost } from "@/services/apiClient"
+import { apiGet, apiGetBlob, apiPost } from "@/services/apiClient"
 import type { AttachmentCasesResponse, AttachmentScope } from "@/types/attachmentCases"
 import type { CohortsResponse } from "@/types/cohorts"
 import type { DataQualityResponse } from "@/types/dataQuality"
@@ -96,6 +96,15 @@ export function getAttachmentCases(
   const params = periodQueryParams(period, customRange)
   params.set("scope", scope)
   return apiGet<AttachmentCasesResponse>(`/api/dashboard/attachment-cases?${params.toString()}`, signal)
+}
+
+export function exportAttachmentAge(
+  period: OverviewPeriod = "all",
+  customRange?: OverviewDateRange,
+  signal?: AbortSignal
+): Promise<Blob> {
+  const query = periodQueryParams(period, customRange).toString()
+  return apiGetBlob(`/api/dashboard/attachment-age/export${query ? `?${query}` : ""}`, signal)
 }
 
 export function getValidationDetail(

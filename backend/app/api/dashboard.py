@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 
 from app.schemas.attachment_cases import AttachmentCasesResponse
 from app.schemas.cohorts import CohortsResponse
@@ -10,6 +10,7 @@ from app.schemas.inborn import InbornResponse
 from app.schemas.outborn import OutbornResponse
 from app.schemas.overview import OverviewResponse
 from app.services import (
+    attachment_age_export_service,
     attachment_cases_service,
     cohorts_service,
     data_quality_service,
@@ -79,4 +80,21 @@ def get_attachment_cases(
     # both translated by the exception handlers registered in app.main.
     return AttachmentCasesResponse(
         **attachment_cases_service.get_attachment_cases(scope, period, from_date, to_date)
+    )
+
+
+@router.get("/attachment-age/export")
+def export_attachment_age(
+    period: Optional[str] = Query(default=None, pattern="^(7d|30d|3m|all)$"),
+    from_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+    to_date: Optional[str] = Query(default=None, pattern="^\\d{4}-\\d{2}-\\d{2}$"),
+) -> Response:
+    """Excel export for the Overview Attachment Age card - same period/
+    from_date/to_date semantics as every other Overview-scoped endpoint
+    above (InvalidDateRangeError -> 400 via the same exception handler)."""
+    workbook_bytes = attachment_age_export_service.build_attachment_age_workbook(period, from_date, to_date)
+    return Response(
+        content=workbook_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="Attachment_Age_Overview.xlsx"'},
     )

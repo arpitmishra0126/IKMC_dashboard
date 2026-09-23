@@ -150,6 +150,7 @@ export function KpiSection() {
               scopePrefix="overview"
               contextLabel="Overview"
               avgIsCombined
+              showExportButton
               period={period}
               customRange={customRange}
             />

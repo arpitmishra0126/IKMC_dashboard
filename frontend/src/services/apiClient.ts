@@ -62,3 +62,20 @@ export async function apiPost<T>(path: string, signal?: AbortSignal): Promise<T>
 
   return (await response.json()) as T
 }
+
+/** Same request/error handling as apiGet, but for binary responses (file
+ * downloads) instead of JSON. */
+export async function apiGetBlob(path: string, signal?: AbortSignal): Promise<Blob> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { signal })
+  } catch {
+    throw new ApiError(0, "Could not reach the API server.")
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await parseErrorDetail(response))
+  }
+
+  return await response.blob()
+}
