@@ -155,13 +155,14 @@ def _build_overview_sheet(
     row += 1
     inborn_rows = pd.concat([inborn_nvd, inborn_csection], ignore_index=True)
     outborn_rows = pd.concat([outborn_nvd, outborn_csection], ignore_index=True)
+    # Total = Inborn + Outborn (all_rows is exactly their union - no
+    # separate "Overall I+O" row, since it was numerically identical to
+    # Total and therefore redundant).
     _write_stat_row(ws, row, "Total", "NVD + C-Section", _group_stats(all_rows))
     row += 1
     _write_stat_row(ws, row, "Inborn", "NVD + C-Section", _group_stats(inborn_rows))
     row += 1
     _write_stat_row(ws, row, "Outborn", "NVD + C-Section", _group_stats(outborn_rows))
-    row += 1
-    _write_stat_row(ws, row, "Overall I+O (NVD + C-section)", "NVD + C-Section", _group_stats(all_rows))
 
     column_widths = [30, 16, 12, 12, 12, 12, 12]
     for col, width in enumerate(column_widths, start=1):
@@ -174,13 +175,14 @@ def _build_data_sheet(wb: Workbook, rows: pd.DataFrame) -> None:
     (already present as `dct_recordid` on every row returned by
     overview_period_metrics.get_overview_attachment_case_export_rows() -
     see that function's _attachment_case_records() call - no new
-    calculation). `Baby ID` (scr_babyid) is kept as its own column since it
-    is still needed as the baby-level identifier."""
+    calculation), displayed with an "S" prefix. `scr_babyid` (Baby ID) is
+    intentionally NOT exported here - this is an output-only omission for
+    this report; scr_babyid itself is untouched everywhere else in the
+    app."""
     ws = wb.create_sheet("data")
 
     headers = [
         "Record ID",
-        "Baby ID",
         "Case (Inborn/Outborn)",
         "attachment age (hh:mm:ss)",
         "Hours",
@@ -194,20 +196,19 @@ def _build_data_sheet(wb: Workbook, rows: pd.DataFrame) -> None:
     for i, record in enumerate(ordered.to_dict(orient="records")):
         row = i + 2
         minutes = record["_minutes"]
-        ws.cell(row=row, column=1, value=record["dct_recordid"])
-        ws.cell(row=row, column=2, value=record["scr_babyid"])
-        ws.cell(row=row, column=3, value=record["cohort"])
+        ws.cell(row=row, column=1, value=f"S{record['dct_recordid']}")
+        ws.cell(row=row, column=2, value=record["cohort"])
 
         if minutes is None or pd.isna(minutes):
+            ws.cell(row=row, column=3, value=None)
             ws.cell(row=row, column=4, value=None)
             ws.cell(row=row, column=5, value=None)
-            ws.cell(row=row, column=6, value=None)
         else:
             minutes_val = float(minutes)
             if minutes_val >= 0:
-                ws.cell(row=row, column=5, value=round(minutes_val / 60, 2))
-                ws.cell(row=row, column=6, value=round(minutes_val, 1))
-                duration_cell = ws.cell(row=row, column=4, value=_minutes_to_day_fraction(minutes_val))
+                ws.cell(row=row, column=4, value=round(minutes_val / 60, 2))
+                ws.cell(row=row, column=5, value=round(minutes_val, 1))
+                duration_cell = ws.cell(row=row, column=3, value=_minutes_to_day_fraction(minutes_val))
                 duration_cell.number_format = _DURATION_FORMAT
             else:
                 # Physically impossible (initiation before birth) - always
@@ -222,21 +223,21 @@ def _build_data_sheet(wb: Workbook, rows: pd.DataFrame) -> None:
                 # sheet, while the real computed values stay visible for
                 # audit. Not hidden, not zeroed, not recalculated from a
                 # fabricated timestamp.
-                ws.cell(row=row, column=4, value="Excluded (negative duration)")
-                ws.cell(row=row, column=5, value=f"Excluded ({round(minutes_val / 60, 2)})")
-                ws.cell(row=row, column=6, value=f"Excluded ({round(minutes_val, 1)})")
+                ws.cell(row=row, column=3, value="Excluded (negative duration)")
+                ws.cell(row=row, column=4, value=f"Excluded ({round(minutes_val / 60, 2)})")
+                ws.cell(row=row, column=5, value=f"Excluded ({round(minutes_val, 1)})")
 
-        for col in range(1, 7):
+        for col in range(1, 6):
             ws.cell(row=row, column=col).border = _THIN_BORDER
-            if col in (4, 5, 6):
+            if col in (3, 4, 5):
                 ws.cell(row=row, column=col).alignment = Alignment(horizontal="center")
 
     last_row = len(ordered) + 1
     ws.freeze_panes = "A2"
     if last_row >= 1:
-        ws.auto_filter.ref = f"A1:F{last_row}"
+        ws.auto_filter.ref = f"A1:E{last_row}"
 
-    column_widths = [16, 16, 22, 24, 12, 12]
+    column_widths = [16, 22, 24, 12, 12]
     for col, width in enumerate(column_widths, start=1):
         ws.column_dimensions[get_column_letter(col)].width = width
 
