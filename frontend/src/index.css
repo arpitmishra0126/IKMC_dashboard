@@ -149,3 +149,38 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * "Export Attachment Age" button - subtle breathing glow (Overview
+ * Attachment Age header only). box-shadow is the only animated property
+ * (paint-only, no layout impact); the reduced-motion override above
+ * already disables this animation site-wide for `prefers-reduced-motion:
+ * reduce`, so no separate override is needed here.
+ */
+:root {
+  --attachment-export-glow: rgba(37, 99, 235, 0.3);
+  --attachment-export-glow-strong: rgba(37, 99, 235, 0.45);
+}
+
+:root[data-theme="dark"] {
+  --attachment-export-glow: rgba(59, 130, 246, 0.4);
+  --attachment-export-glow-strong: rgba(59, 130, 246, 0.55);
+}
+
+@keyframes attachment-export-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--attachment-export-glow);
+  }
+  50% {
+    box-shadow: 0 0 16px 4px var(--attachment-export-glow);
+  }
+}
+
+.attachment-export-btn {
+  animation: attachment-export-glow 2.8s ease-in-out infinite;
+}
+
+.attachment-export-btn:hover {
+  --attachment-export-glow: var(--attachment-export-glow-strong);
+}

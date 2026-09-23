@@ -61,7 +61,14 @@ function ExportAttachmentAgeButton({ period, customRange }: ExportAttachmentAgeB
 
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
-      <Button type="button" size="sm" variant="outline" disabled={status === "loading"} onClick={handleExport}>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={status === "loading"}
+        onClick={handleExport}
+        className="attachment-export-btn border-[#93C5FD] bg-[#EFF6FF] text-[#1D4ED8] hover:border-[#60A5FA] hover:bg-[#DBEAFE] hover:text-[#1D4ED8] dark:border-[#3B82F6] dark:bg-[#172554] dark:text-[#93C5FD] dark:hover:border-[#60A5FA] dark:hover:bg-[#1E3A8A] dark:hover:text-[#93C5FD]"
+      >
         {status === "loading" ? (
           <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
         ) : (
