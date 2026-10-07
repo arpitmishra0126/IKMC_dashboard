@@ -14,6 +14,7 @@ from typing import Any
 
 from app.core.exceptions import UnknownValidationCheckError
 from app.services.indicators_bridge import dataframe_to_records, indicators
+from services import data_quality_checks
 
 # check name (URL path segment) -> services.indicators function name
 _CHECK_TO_FUNCTION = {
@@ -24,17 +25,25 @@ _CHECK_TO_FUNCTION = {
     "discharge-duplicates": "get_duplicate_discharge_df",
 }
 
+# checks implemented outside services.indicators (services/data_quality_checks.py)
+_EXTRA_CHECKS = {
+    "initiation-before-birth": data_quality_checks.get_initiation_before_birth_df,
+}
+
 
 def known_checks() -> list[str]:
-    return sorted(_CHECK_TO_FUNCTION.keys())
+    return sorted([*_CHECK_TO_FUNCTION.keys(), *_EXTRA_CHECKS.keys()])
 
 
 def get_validation_detail(check: str) -> dict[str, Any]:
     func_name = _CHECK_TO_FUNCTION.get(check)
-    if func_name is None:
+    if func_name is not None:
+        fn = getattr(indicators, func_name)
+    elif check in _EXTRA_CHECKS:
+        fn = _EXTRA_CHECKS[check]
+    else:
         raise UnknownValidationCheckError(check, known_checks())
 
-    fn = getattr(indicators, func_name)
     df = fn()
 
     return {

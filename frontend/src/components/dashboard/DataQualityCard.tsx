@@ -1,6 +1,5 @@
-import { AlertTriangle, CheckCircle2 } from "lucide-react"
+import { AlertTriangle, CheckCircle2, ChevronDown } from "lucide-react"
 
-import { ValidationDetailPanel } from "@/components/dashboard/ValidationDetailPanel"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatNumber } from "@/lib/format"
@@ -13,17 +12,26 @@ interface DataQualityCardProps {
   /** URL path segment for GET /api/validation/{check}, when a record-level
    * detail table exists for this metric. Omit to render a plain count. */
   validationCheck?: string
+  /** Whether this card's record table is currently open below the grid. */
+  isOpen?: boolean
+  onToggle?: () => void
 }
 
 /**
  * Severity is derived purely from whether the count is zero (see
  * lib/severity.ts) - status is always shown with an icon AND text/color
  * together, never color alone. Icon+label+count laid out as a compact
- * horizontal cluster (matching CohortTotalBanner's existing pattern)
- * rather than a full-width stacked header, so the card reads the same way
- * whether it's a third of the row or half of it.
+ * horizontal cluster (matching CohortTotalBanner's existing pattern). All
+ * six cards sit in one equal-width grid; the record table opens below the
+ * grid (see DataQualitySection), so the card itself never changes size.
  */
-export function DataQualityCard({ label, value, validationCheck }: DataQualityCardProps) {
+export function DataQualityCard({
+  label,
+  value,
+  validationCheck,
+  isOpen = false,
+  onToggle,
+}: DataQualityCardProps) {
   const severity = severityFromCount(value)
   const isHealthy = severity === "success"
   const Icon = isHealthy ? CheckCircle2 : AlertTriangle
@@ -31,22 +39,22 @@ export function DataQualityCard({ label, value, validationCheck }: DataQualityCa
   return (
     <Card
       className={cn(
-        "border-l-4 transition-shadow hover:shadow-md",
+        "h-full border-l-4 transition-shadow hover:shadow-md",
         isHealthy ? "border-l-success" : "border-l-warning"
       )}
     >
-      <CardContent className="pt-5">
+      <CardContent className="flex h-full flex-col justify-between gap-3 pt-5">
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              "rounded-lg p-2",
+              "shrink-0 rounded-lg p-2",
               isHealthy ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
             )}
           >
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+            <p className="text-muted-foreground text-xs font-semibold uppercase leading-tight tracking-wide">
               {label}
             </p>
             <div className="flex items-baseline gap-2">
@@ -60,8 +68,19 @@ export function DataQualityCard({ label, value, validationCheck }: DataQualityCa
           </div>
         </div>
 
-        {validationCheck ? (
-          <ValidationDetailPanel check={validationCheck} triggerLabel="View records" />
+        {validationCheck && onToggle ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={isOpen}
+            className="border-border/70 text-muted-foreground hover:text-foreground flex w-full items-center justify-between border-t pt-3 text-left text-xs font-medium"
+          >
+            <span>View records</span>
+            <ChevronDown
+              className={cn("size-4 transition-transform", isOpen && "rotate-180")}
+              aria-hidden="true"
+            />
+          </button>
         ) : null}
       </CardContent>
     </Card>
@@ -70,7 +89,7 @@ export function DataQualityCard({ label, value, validationCheck }: DataQualityCa
 
 export function DataQualityCardSkeleton({ label }: { label: string }) {
   return (
-    <Card className="border-l-4 border-l-transparent">
+    <Card className="h-full border-l-4 border-l-transparent">
       <CardContent className="pt-5">
         <div className="flex items-center gap-3">
           <Skeleton className="size-9 rounded-lg" />

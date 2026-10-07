@@ -6,12 +6,16 @@ Per docs/MIGRATION_DECISIONS.md #7: get_validation_status() does not
 incorporate missing_baby_ids or duplicate_babies into its "Healthy" /
 "Review Required" decision. That behavior is reproduced unchanged here -
 this module does not alter get_validation_status()'s inputs.
+
+`initiation_before_birth` is an additive, standalone check (see
+services/data_quality_checks.py); it does not feed validation_status.
 """
 from __future__ import annotations
 
 from typing import Any
 
 from app.services.indicators_bridge import indicators, to_native
+from services import data_quality_checks
 
 
 def get_data_quality() -> dict[str, Any]:
@@ -21,5 +25,8 @@ def get_data_quality() -> dict[str, Any]:
         "unmatched_records": to_native(indicators.get_merge_mismatch_count()),
         "missing_daily_care": to_native(indicators.get_missing_dailycare_count()),
         "discharge_duplicates": to_native(indicators.get_duplicate_discharge_count()),
+        "initiation_before_birth": to_native(
+            data_quality_checks.get_initiation_before_birth_count()
+        ),
         "validation_status": indicators.get_validation_status(),
     }

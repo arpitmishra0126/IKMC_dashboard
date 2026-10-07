@@ -13,5 +13,6 @@ export interface DataQualityResponse {
   unmatched_records: number
   missing_daily_care: number
   discharge_duplicates: number
+  initiation_before_birth: number
   validation_status: string
 }
