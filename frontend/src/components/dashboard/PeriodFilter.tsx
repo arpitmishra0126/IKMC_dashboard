@@ -77,11 +77,11 @@ export function PeriodFilter({
   }
 
   return (
-    <div className="flex flex-col items-end gap-2 pr-1">
+    <div className="flex w-full min-w-0 flex-col items-stretch gap-2 sm:w-auto sm:items-end sm:pr-1">
       <div
         role="group"
         aria-label="Data period"
-        className="bg-muted/60 border-border/70 inline-flex items-center gap-1 rounded-xl border p-1"
+        className="bg-muted/60 border-border/70 grid grid-cols-2 gap-1 rounded-xl border p-1 sm:inline-flex sm:items-center"
       >
         {OPTIONS.map((option) => {
           const isActive = !isCustomActive && option.value === value
@@ -92,7 +92,7 @@ export function PeriodFilter({
               aria-pressed={isActive}
               onClick={() => onChange(option.value)}
               className={cn(
-                "focus-visible:ring-ring rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap outline-none transition-all duration-150 focus-visible:ring-2",
+                "focus-visible:ring-ring min-h-11 rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap sm:min-h-0 outline-none transition-all duration-150 focus-visible:ring-2",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-card hover:text-foreground"
@@ -104,8 +104,8 @@ export function PeriodFilter({
         })}
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium whitespace-nowrap">
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+        <span className="text-muted-foreground flex w-full items-center gap-1 text-xs font-medium whitespace-nowrap sm:w-auto">
           <CalendarDays className="size-3.5 shrink-0" aria-hidden="true" />
           Reporting Period:
         </span>
@@ -118,7 +118,7 @@ export function PeriodFilter({
           value={fromDate}
           max={toDate || today}
           onChange={(event) => setFromDate(event.target.value)}
-          className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 text-xs outline-none focus-visible:ring-2"
+          className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-11 min-w-0 flex-1 rounded-md border px-2 text-xs outline-none focus-visible:ring-2 sm:h-8 sm:flex-none"
         />
         <label className="sr-only" htmlFor="reporting-period-to">
           To date
@@ -130,7 +130,7 @@ export function PeriodFilter({
           min={fromDate || undefined}
           max={today}
           onChange={(event) => setToDate(event.target.value)}
-          className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 text-xs outline-none focus-visible:ring-2"
+          className="bg-card border-border/70 text-foreground focus-visible:ring-ring h-11 min-w-0 flex-1 rounded-md border px-2 text-xs outline-none focus-visible:ring-2 sm:h-8 sm:flex-none"
         />
         <Button
           type="button"

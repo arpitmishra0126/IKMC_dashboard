@@ -35,7 +35,7 @@ export function SyncMetadataDisplay() {
   }
 
   return (
-    <dl className="flex flex-wrap gap-2 text-sm">
+    <dl className="flex flex-wrap justify-center gap-2 text-sm sm:justify-start">
       <SyncPill
         icon={CalendarClock}
         label="Latest screening date"
@@ -64,10 +64,10 @@ function SyncPill({
 }) {
   const hasValue = value !== null
   return (
-    <div className="bg-muted/60 border-border/70 flex items-center gap-2 rounded-full border px-3 py-1.5">
+    <div className="bg-muted/60 border-border/70 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-2xl border px-3 py-1.5 sm:rounded-full">
       <Icon className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
       <dt className="text-muted-foreground text-xs font-medium">{label}:</dt>
-      <dd className={hasValue ? "text-foreground text-xs font-semibold" : "text-muted-foreground text-xs italic"}>
+      <dd className={hasValue ? "text-foreground text-xs font-semibold whitespace-nowrap" : "text-muted-foreground text-xs italic"}>
         {hasValue ? value : emptyText}
       </dd>
     </div>

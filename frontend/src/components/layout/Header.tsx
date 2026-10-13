@@ -56,10 +56,10 @@ export function Header({ onDataRefreshed }: HeaderProps) {
 
       <div className="border-border/70 border-b" />
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-between">
         <SyncMetadataDisplay />
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-end">
           <ApiStatusIndicator />
           <ThemeToggle />
           <Button

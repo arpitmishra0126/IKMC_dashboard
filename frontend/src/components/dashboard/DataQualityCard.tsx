@@ -73,7 +73,7 @@ export function DataQualityCard({
             type="button"
             onClick={onToggle}
             aria-expanded={isOpen}
-            className="border-border/70 text-muted-foreground hover:text-foreground flex w-full items-center justify-between border-t pt-3 text-left text-xs font-medium"
+            className="border-border/70 text-muted-foreground hover:text-foreground flex min-h-11 w-full items-center justify-between border-t text-left text-xs font-medium sm:min-h-0 sm:pt-3"
           >
             <span>View records</span>
             <ChevronDown

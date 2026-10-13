@@ -100,7 +100,7 @@ export function CohortAttachmentAgeCardSkeleton() {
           <Skeleton className="size-9 rounded-lg" />
           <Skeleton className="h-4 w-32" />
         </div>
-        <Skeleton className="mt-1 h-3 w-72" />
+        <Skeleton className="mt-1 h-3 w-72 max-w-full" />
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <Skeleton className="h-36 w-full" />

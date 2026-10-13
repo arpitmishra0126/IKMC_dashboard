@@ -14,7 +14,7 @@ export function AppShell({ header, nav, children }: AppShellProps) {
       <div className="mx-auto flex max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         {header}
         {nav ? (
-          <div className="border-border/70 -mx-4 mt-4 border-b px-4 pb-4 sm:mx-0 sm:px-0">{nav}</div>
+          <div className="border-border/70 mt-4 border-b pb-4">{nav}</div>
         ) : null}
         <main className="mt-6 flex flex-col gap-8">{children}</main>
       </div>

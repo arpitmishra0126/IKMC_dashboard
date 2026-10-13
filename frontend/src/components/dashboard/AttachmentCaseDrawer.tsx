@@ -121,7 +121,7 @@ export function AttachmentCaseDrawer({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring rounded-md p-1 outline-none focus-visible:ring-2"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring rounded-md p-2.5 outline-none focus-visible:ring-2 sm:p-1"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
@@ -165,7 +165,7 @@ export function AttachmentCaseDrawer({
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Filter by Record ID or Baby ID"
-                className="bg-muted/40 border-border/70 focus-visible:ring-ring h-8 w-full rounded-md border py-1 pr-2 pl-7 text-xs outline-none focus-visible:ring-2"
+                className="bg-muted/40 border-border/70 focus-visible:ring-ring h-11 w-full rounded-md border py-1 pr-2 pl-7 sm:h-8 text-xs outline-none focus-visible:ring-2"
               />
             </div>
           </div>

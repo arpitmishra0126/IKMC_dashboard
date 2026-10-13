@@ -185,7 +185,7 @@ export function CohortPanel({
           <button
             type="button"
             onClick={() => open("all")}
-            className="hover:text-primary focus-visible:ring-ring rounded text-lg font-bold tabular-nums outline-none focus-visible:ring-2"
+            className="hover:text-primary focus-visible:ring-ring min-h-11 rounded text-lg font-bold tabular-nums outline-none focus-visible:ring-2 sm:min-h-0"
           >
             {formatNumber(stat.case_count)} cases
           </button>
@@ -303,7 +303,7 @@ export function AttachmentAgeCardSkeleton() {
           <Skeleton className="size-9 rounded-lg" />
           <Skeleton className="h-4 w-32" />
         </div>
-        <Skeleton className="mt-1 h-3 w-72" />
+        <Skeleton className="mt-1 h-3 w-72 max-w-full" />
       </CardHeader>
       <CardContent>
         <Skeleton className="h-40 w-full" />
