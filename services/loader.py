@@ -1,6 +1,8 @@
 import json
+from contextvars import ContextVar
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 
 import pandas as pd
 import streamlit as st
@@ -9,6 +11,25 @@ from services.config import FILES, DATA_SOURCE
 from services import api_service
 
 RAW_PATH = Path("data/raw")
+
+# A single dashboard request (e.g. GET /api/dashboard/overview) ends up
+# calling load_all_data() a dozen-plus times - once per indicator function
+# it touches. st.cache_data already avoids re-fetching/re-parsing on a
+# cache hit, but it still returns a fresh deep copy of the whole 4-dataset
+# dict on EVERY call, by design, so accidental mutation by one caller can't
+# leak into another's cached result. Repeating that copy a dozen times per
+# request is pure overhead - none of the existing callers mutate the
+# DataFrames they get back, they only filter/read them.
+#
+# _REQUEST_DATA holds that one deep copy for the lifetime of a single
+# request so every indicator call within it reuses the same object instead
+# of paying for a fresh copy each time. It is request-scoped, not
+# process-wide: ContextVar state doesn't cross asyncio Tasks (FastAPI gives
+# each request its own Task), so concurrent requests never see each
+# other's value, and nothing here changes what "Refresh Dashboard" does -
+# clearing st.cache_data still forces the next request's first call to
+# re-run load_all_data() against the configured DATA_SOURCE.
+_REQUEST_DATA: ContextVar[Optional[dict]] = ContextVar("_REQUEST_DATA", default=None)
 
 # ==========================================================
 # JSON LOADER
@@ -50,22 +71,29 @@ def load_json_data():
 
 @st.cache_data
 def load_api_data():
+    # The 4 datasets are independent REST calls to the same upstream API -
+    # fetching them one after another serialized their network latency
+    # (and any inter-page rate-limit sleep in services/api_service.py) into
+    # one long wait on every cold cache load. They don't depend on each
+    # other, so fetch them concurrently and let the slowest one set the
+    # total time instead of the sum of all four.
+    from concurrent.futures import ThreadPoolExecutor
 
-    print("Loading eligibility...")
-    eligibility = api_service.get_eligibility_data()
-    print("✓ eligibility loaded")
+    fetchers = {
+        "eligibility": api_service.get_eligibility_data,
+        "mother": api_service.get_mother_data,
+        "daily": api_service.get_daily_data,
+        "discharge": api_service.get_discharge_data,
+    }
 
-    print("Loading mother...")
-    mother = api_service.get_mother_data()
-    print("✓ mother loaded")
+    with ThreadPoolExecutor(max_workers=len(fetchers)) as pool:
+        futures = {key: pool.submit(fn) for key, fn in fetchers.items()}
+        results = {key: future.result() for key, future in futures.items()}
 
-    print("Loading daily...")
-    daily = api_service.get_daily_data()
-    print("✓ daily loaded")
-
-    print("Loading discharge...")
-    discharge = api_service.get_discharge_data()
-    print("✓ discharge loaded")
+    eligibility = results["eligibility"]
+    mother = results["mother"]
+    daily = results["daily"]
+    discharge = results["discharge"]
 
     sync_time = datetime.now()
 
@@ -81,7 +109,7 @@ def load_api_data():
 # ==========================================================
 
 @st.cache_data
-def load_all_data():
+def _load_all_data_cached():
     """
     Load data from the configured source.
     """
@@ -96,6 +124,21 @@ def load_all_data():
         raise ValueError(
             f"Unsupported DATA_SOURCE: {DATA_SOURCE}"
         )
+
+
+def load_all_data():
+    """
+    Load data from the configured source. Reuses the same already-loaded
+    (and already copied out of st.cache_data) dict for every call made
+    within the current request, instead of paying for a fresh deep copy on
+    each of the many indicator calls a single request makes. See
+    _REQUEST_DATA above.
+    """
+    data = _REQUEST_DATA.get()
+    if data is None:
+        data = _load_all_data_cached()
+        _REQUEST_DATA.set(data)
+    return data
 
 def get_last_sync():
     data = load_all_data()

@@ -46,6 +46,20 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def reset_request_data_cache(request: Request, call_next):
+    """Guarantees services.loader.load_all_data()'s per-request reuse
+    (see services/loader.py _REQUEST_DATA) never starts a request with a
+    stale value, regardless of ASGI server/task-reuse details."""
+    import services.loader as loader
+
+    token = loader._REQUEST_DATA.set(None)
+    try:
+        return await call_next(request)
+    finally:
+        loader._REQUEST_DATA.reset(token)
+
+
 @app.exception_handler(UnknownValidationCheckError)
 async def handle_unknown_validation_check(
     request: Request, exc: UnknownValidationCheckError
