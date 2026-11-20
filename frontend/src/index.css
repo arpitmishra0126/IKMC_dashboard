@@ -148,6 +148,16 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+
+  /*
+   * The ECG scroll is a live status indicator (the only sign the backend
+   * is still being waited on), not decorative motion - exempt it from the
+   * blanket freeze above so it keeps moving under reduced-motion too.
+   */
+  .ecg-wave-track {
+    animation-duration: 2.2s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
 
 /*
