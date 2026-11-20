@@ -1,5 +1,3 @@
-import { EcgWave } from "@/components/loader/EcgWave"
-
 export type AppLoaderPhase = "please-wait" | "loading" | "error"
 
 interface AppLoaderProps {
@@ -21,7 +19,7 @@ export function AppLoader({ phase, onRetry }: AppLoaderProps) {
 
       {phase === "loading" && (
         <div className="app-loader-content">
-          <EcgWave />
+          <div className="loader" aria-hidden="true" />
           <p className="app-loader-title">Loading iKMC Monitoring System...</p>
           <p className="app-loader-subtitle">Please wait a moment</p>
         </div>
