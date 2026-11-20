@@ -11,3 +11,7 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+// AppInitializer's own "Please Wait" screen has now taken over - drop the
+// static pre-mount one from index.html.
+document.getElementById('boot-loader')?.remove()

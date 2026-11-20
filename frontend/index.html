@@ -5,6 +5,28 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IKMC Dashboard</title>
+    <style>
+      /*
+       * Shown immediately, before the app bundle executes, so stage 1 of
+       * the startup loader ("Please Wait") never has to race page load.
+       * AppInitializer renders the identical look right after mount, then
+       * removes this node - see src/main.tsx.
+       */
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f5f5f5;
+        font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 0.08em;
+      }
+    </style>
     <script>
       // Applies the saved/default theme before first paint to avoid a
       // flash of the wrong theme. Mirrors src/hooks/useTheme.tsx: dark is
@@ -22,6 +44,7 @@
     </script>
   </head>
   <body>
+    <div id="boot-loader">Please Wait</div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
